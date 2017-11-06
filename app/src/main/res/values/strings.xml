@@ -1,0 +1,44 @@
+<resources>
+
+    <!-- - - - - - - - - - - - - -->
+    <!--  Used throughout Movie  -->
+    <!-- - - - - - - - - - - - - -->
+
+    <string name="app_name">Popular Movies</string>
+
+    <string name="error_message">
+        An error has occurred. Please try again by clicking REFRESH</string>
+
+
+    <!-- - - - - - - - - - - - - - -  -->
+    <!--      Movie Filter Menu       -->
+    <!-- - - - - - - - - - - - - - -  -->
+
+    <string name="most_popular">Most Popular</string>
+    <string name="top_rated">Top Rated</string>
+
+
+    <!-- - - - - - - - - - - - - - -  -->
+    <!--   Activity Detail Strings    -->
+    <!-- - - - - - - - - - - - - - -  -->
+
+    <string name="rating_text">Rating:</string>
+    <string name="release_date_text">Release Date:</string>
+    <string name="movie_synopsis_text">Movie Synopsis</string>
+
+
+    <!-- - - - - - - - - - - - - - -  -->
+    <!--     Wifi Error Messages      -->
+    <!-- - - - - - - - - - - - - - -  -->
+
+    <string name="wifi_error_text">Internet Not Found \n\n Connect To The Internet And Try Again</string>
+    <string name="wifi_error_btn_text">Retry</string>
+
+
+    <!-- - - - - - - - - - - - - - -  -->
+    <!-- Content Description For Lint -->
+    <!-- - - - - - - - - - - - - - -  -->
+
+    <string name="content_description_for_lint">@null</string>
+
+</resources>

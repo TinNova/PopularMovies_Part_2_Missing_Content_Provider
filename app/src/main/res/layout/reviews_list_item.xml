@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/user_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"
+        tools:text="FilmFanatic" />
+
+    <TextView
+        android:id="@+id/user_review"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        tools:text="This was the most fun I’ve had watching a movie in a long time. It has everything I’m looking for in a summer blockbuster: nonstop action, amazing soundtrack (best soundtrack of the year), and hilariously funny. Oh and it’s an Edgar Wright film which has never been a let down. I’ve never seen the star, Ansel Elgort, in anything before but I know he was in the running to play Han Solo and now I’m extremely sad he didn’t make the cut – he even dresses like Solo for most of the film. Read more of my review here: https://imdgflicks.wordpress.com/2017/06/30/baby-driver-is-the-best-music-video-since-tron-legacy/"/>
+
+    <View
+        android:id="@+id/line_1"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/synopsis_text"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@color/grey_light" />
+
+</LinearLayout>

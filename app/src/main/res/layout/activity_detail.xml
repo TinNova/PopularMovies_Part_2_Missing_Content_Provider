@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp">
+
+            <LinearLayout
+                android:id="@+id/poster_title_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/movie_image"
+                    android:layout_width="123dp"
+                    android:layout_height="186dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@string/content_description_for_lint"
+                    android:paddingBottom="8dp"
+                    app:srcCompat="@drawable/planetoftheapes" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:orientation="vertical">
+
+
+                    <TextView
+                        android:id="@+id/movie_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:paddingBottom="8dp"
+
+                        android:textAlignment="textStart"
+                        android:textColor="@color/grey_dark"
+                        android:textSize="@dimen/font_largest"
+                        android:textStyle="bold"
+                        tools:text="War for the Planet of the Apes" />
+
+                    <TextView
+                        android:id="@+id/rating_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/rating_text"
+                        android:textSize="@dimen/font_small" />
+
+                    <TextView
+                        android:id="@+id/movie_rating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp"
+                        android:textColor="@color/grey_dark"
+                        android:textSize="@dimen/font_large"
+                        android:textStyle="bold|italic"
+                        tools:text="9.9" />
+
+                    <TextView
+                        android:id="@+id/release_date_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/release_date_text"
+                        android:textSize="@dimen/font_small" />
+
+                    <TextView
+                        android:id="@+id/movie_release_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp"
+                        android:textColor="@color/grey_dark"
+                        android:textSize="@dimen/font_large"
+                        android:textStyle="bold|italic"
+                        tools:text="15/08/2016" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/synopsis_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/poster_title_layout"
+                android:layout_marginStart="8dp"
+                android:text="@string/movie_synopsis_text"
+                android:textSize="@dimen/font_small" />
+
+            <View
+                android:id="@+id/line_1"
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_below="@id/synopsis_text"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:background="@color/grey_dark" />
+
+            <TextView
+                android:id="@+id/movie_synopsis"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/line_1"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginBottom="12dp"
+                android:textSize="@dimen/font_small"
+                tools:text="Minions Stuart, Kevin and Bob are recruited by Scarlet Overkill, a
+                super-villain who, alongside her inventor husband Herb, hatches a plot to take over the world." />
+
+            <TextView
+                android:id="@+id/trailer_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Trailers"
+                android:textSize="21dp"
+                android:layout_below="@+id/movie_synopsis"
+                android:layout_marginLeft="8dp"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerview_trailer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/trailer_title"
+                android:layout_marginLeft="8dp"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:id="@+id/cast_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cast"
+                android:textSize="21dp"
+                android:layout_below="@+id/recyclerview_trailer"
+                android:layout_marginLeft="8dp"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerview_castMember"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/cast_title"
+                android:layout_marginLeft="8dp"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:id="@+id/review_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reviews"
+                android:textSize="21dp"
+                android:layout_below="@+id/recyclerview_castMember"
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="8dp"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerview_review"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/review_title"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="4dp">
+
+        <ImageView
+            android:id="@+id/trailer_thumbnail"
+            android:layout_width="168dp"
+            android:layout_height="93.99dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/content_description_for_lint"
+            android:scaleType="centerCrop"
+            app:srcCompat="@drawable/godfatherthumbnail" />
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="64dp"
+            android:layout_marginTop="26.99dp"
+            app:srcCompat="@drawable/playicon" />
+
+
+        <TextView
+            android:id="@+id/trailer_title"
+            android:layout_width="168dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/trailer_thumbnail"
+            android:textSize="12sp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="Trailer #1" />
+
+    </RelativeLayout>
+
+</LinearLayout>
