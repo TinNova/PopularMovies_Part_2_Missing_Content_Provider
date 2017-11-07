@@ -3,41 +3,42 @@ package com.example.tin.popularmovies.Activities;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 
 import com.example.tin.popularmovies.Adapters.FavouritesAdapter;
-import com.example.tin.popularmovies.FavouritesContract;
-import com.example.tin.popularmovies.FavouritesDbHelper;
+import com.example.tin.popularmovies.Data.FavouritesContract;
+import com.example.tin.popularmovies.Data.FavouritesDbHelper;
 import com.example.tin.popularmovies.Models.FavouriteMovie;
 import com.example.tin.popularmovies.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FavouriteMoviesActivity extends AppCompatActivity implements FavouritesAdapter.ListItemClickListener {
+public class FavouriteMoviesActivity extends AppCompatActivity implements FavouritesAdapter.ListItemClickListener,
+        LoaderManager.LoaderCallbacks<Cursor> {
+
+    Cursor mFavouriteMoviesData;
 
     // TAG to help catch errors in Log
     private static final String TAG = FavouriteMoviesActivity.class.getSimpleName();
+    // Constant for logging and referring to a unique loader
+    private static final int FAVOURITEMOVIES_LOADER_ID = 0;
 
-    private SQLiteDatabase mDb;
     private RecyclerView favouriteRecyclerView;
     private FavouritesAdapter favouritesAdapter;
     List<FavouriteMovie> favouriteMovies;
-
-
-    Cursor cursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favourite_movies);
-
-        Log.v(TAG, "DATA IN FAVOURITE MOV11");
 
         favouriteRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_favourite);
 
@@ -45,70 +46,28 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements Favour
                 new GridLayoutManager(this, 2);
         favouriteRecyclerView.setLayoutManager(favouriteGridLayoutManager);
         favouriteMovies = new ArrayList<>();
-        // Here we initialise the Database and call how we want to use it, here we only need to read the database
-        FavouritesDbHelper dbHelper = new FavouritesDbHelper(this);
-        mDb = dbHelper.getReadableDatabase();
-        cursor = getAllMovies();
-        addMoviesToList(cursor);
+
+        /*
+         Ensure a loader is initialized and active. If the loader doesn't already exist, one is
+         created, otherwise the last created loader is re-used.
+         */
+        getSupportLoaderManager().initLoader(FAVOURITEMOVIES_LOADER_ID, null, this);
 
     }
 
-    /**
-     * Here we query the database for all of the rows, and we return the result of the query
-     * @return
-     */
-    private Cursor getAllMovies() {
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-        return mDb.query(
-                FavouritesContract.FavouritesEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                FavouritesContract.FavouritesEntry._ID
-        );
+        // first we clear the favouriteMovies List, otherwise it will present another list on top
+        // of the previously loaded list.
+        // TODO HOWEVER, do we want to reload the list every time? I think we only want to do that if we know there
+        // was an update to the SQLite database, otherwise it's not necessary because nothing would've
+        // changed...????
+        favouriteMovies.clear();
+        // re-queries for all of the favouriteMovies
+        getSupportLoaderManager().restartLoader(FAVOURITEMOVIES_LOADER_ID, null, this);
     }
-
-    /** Here We Are Accessing The SQLite Query We Received In The Method getAllMovies() Which Is Set To Read All Rows
-     * We're Going Through Each Row With A For Loop And Putting Them Into Our FavouriteMovie Model
-     *
-     * @param cursor
-     */
-    private void addMoviesToList(Cursor cursor) {
-
-        if (cursor != null && cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            for (int count = 0; count < cursor.getCount(); count++) {
-
-                FavouriteMovie favouriteMovie = new FavouriteMovie(
-
-                        cursor.getLong(cursor.getColumnIndex(FavouritesContract.FavouritesEntry._ID)),
-                        cursor.getString(cursor.getColumnIndex(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID)),
-                        cursor.getBlob(cursor.getColumnIndex(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_POSTER))
-
-                );
-
-                Log.v(TAG, "Row_Id" + cursor.getLong(cursor.getColumnIndex(FavouritesContract.FavouritesEntry._ID)));
-
-                favouriteMovies.add(favouriteMovie);
-
-                Log.v(TAG, "DATA IN FAVOURITE Movies: " + favouriteMovies);
-
-                cursor.moveToNext();
-            }
-
-            favouritesAdapter = new FavouritesAdapter(favouriteMovies, getApplicationContext(), FavouriteMoviesActivity.this);
-            favouriteRecyclerView.setAdapter(favouritesAdapter);
-
-        } else {
-            Log.v(TAG, "cursor is Empty");
-        }
-
-        cursor.close();
-        mDb.close();
-    }
-
 
     /**
      * Here we are passing passing Extra's into the DetailActivity
@@ -124,5 +83,114 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements Favour
 
         startActivity(intent);
 
+    }
+
+    /**
+     * Instantiates and returns a new AsyncTaskLoader with the given ID.
+     * This loader will return favouriteMovie data as a Cursor or null if an error occurs.
+     * <p>
+     * Implements the required callbacks to take care of loading data at all stages of loading.
+     */
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        return new AsyncTaskLoader<Cursor>(this) {
+
+            Cursor mFavouriteMoviesData = null;
+
+            @Override
+            protected void onStartLoading() {
+                if (mFavouriteMoviesData != null) {
+                    // Delivers any previously loaded data immediately
+                    deliverResult(mFavouriteMoviesData);
+                } else {
+                    // Force a new load
+                    forceLoad();
+                }
+            }
+
+            // loadInBackground() performs asynchronous loading of data
+            @Override
+            public Cursor loadInBackground() {
+
+                try {
+                    return getContentResolver().query(
+                            FavouritesContract.FavouritesEntry.CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            FavouritesContract.FavouritesEntry._ID
+                    );
+
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to asynchronously load data.");
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            // deliverResult sends the result of the load, a Cursor, to the registered listener
+            public void deliverResult(Cursor data) {
+                mFavouriteMoviesData = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    /**
+     * Called when a previously created loader has finished its load.
+     *
+     * @param loader The Loader that has finished.
+     * @param data   The data generated by the Loader.
+     */
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+        /** Here We Are Accessing The SQLite Query We Received In The Method getAllMovies() Which Is Set To Read All Rows
+         * We're Going Through Each Row With A For Loop And Putting Them Into Our FavouriteMovie Model
+         *
+         * @param cursor
+         */
+
+        if (data != null && data.getCount() > 0) {
+            data.moveToFirst();
+            for (int count = 0; count < data.getCount(); count++) {
+
+                FavouriteMovie favouriteMovie = new FavouriteMovie(
+
+                        data.getLong(data.getColumnIndex(FavouritesContract.FavouritesEntry._ID)),
+                        data.getString(data.getColumnIndex(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID)),
+                        data.getBlob(data.getColumnIndex(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_POSTER))
+
+                );
+
+                Log.v(TAG, "Row_Id" + data.getLong(data.getColumnIndex(FavouritesContract.FavouritesEntry._ID)));
+
+                favouriteMovies.add(favouriteMovie);
+
+                Log.v(TAG, "DATA LOADED BY onLoadFinished: " + favouriteMovies);
+
+                data.moveToNext();
+            }
+
+            favouritesAdapter = new FavouritesAdapter(favouriteMovies, getApplicationContext(), FavouriteMoviesActivity.this);
+            favouriteRecyclerView.setAdapter(favouritesAdapter);
+
+        } else {
+            Log.v(TAG, "cursor is Empty");
+        }
+
+        data.close();
+    }
+
+    /**
+     * Called when a previously created loader is being reset, and thus
+     * making its data unavailable.
+     * onLoaderReset removes any references this activity had to the loader's data.
+     *
+     * @param loader The Loader that is being reset.
+     */
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
     }
 }

@@ -33,6 +33,13 @@
             android:name=".Activities.FavouriteMoviesActivity"
             android:parentActivityName=".Activities.MainActivity" />
 
+        <provider
+            android:authorities="com.example.tin.popularmovies"
+            android:name="com.example.tin.popularmovies.Data.FavouritesContentProvider"
+            android:exported="false"/>
+
     </application>
+
+
 
 </manifest>

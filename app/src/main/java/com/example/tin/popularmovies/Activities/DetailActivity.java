@@ -21,8 +21,8 @@ import android.widget.Toast;
 import com.example.tin.popularmovies.Adapters.CastMemberAdapter;
 import com.example.tin.popularmovies.Adapters.ReviewAdapter;
 import com.example.tin.popularmovies.Adapters.TrailerAdapter;
-import com.example.tin.popularmovies.FavouritesContract;
-import com.example.tin.popularmovies.FavouritesDbHelper;
+import com.example.tin.popularmovies.Data.FavouritesContract;
+import com.example.tin.popularmovies.Data.FavouritesDbHelper;
 import com.example.tin.popularmovies.Models.CastMember;
 import com.example.tin.popularmovies.Models.Review;
 import com.example.tin.popularmovies.Models.Trailer;
@@ -468,7 +468,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
      * Code Which Add A Film To The SQL Database
      */
     // Code that adds a new movie into the Favourite Movies Sql
-    private long addNewMovie(String movieIdSql, String movieTitleSql, byte[] moviePosterByteArraySql) {
+    private void addNewMovie(String movieIdSql, String movieTitleSql, byte[] moviePosterByteArraySql) {
 
         // ContentValues passes the values onto the SQLite insert query
         ContentValues cv = new ContentValues();
@@ -479,11 +479,20 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_NAME, movieTitleSql);
         cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_POSTER, moviePosterByteArraySql);
 
+        // Insert the new movie to the Favourite SQLite Db via a ContentResolver
+        Uri uri = getContentResolver().insert(FavouritesContract.FavouritesEntry.CONTENT_URI, cv);
+
+        // Display the URI that's returned with a Toast
+        if (uri != null) {
+            Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_SHORT).show();
+        }
+
+        finish();
         // Here we return the mDb.insert Method, and specify the Table Name, and the ContentValues object
         // This will return a new row in the table with the values specified in the cv
         // Note: We didn't insert the Row ID, that's because we specified in the SQL onCreate statement
         //       That the row _ID will autoincrement
-        return mDb.insert(FavouritesContract.FavouritesEntry.TABLE_NAME, null, cv);
+        //return mDb.insert(FavouritesContract.FavouritesEntry.TABLE_NAME, null, cv);
 
     }
 
@@ -572,11 +581,15 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
      * - It takes a long as the input which is the ID of the Row
      * - It returns a boolean to say if the deletion was successful or not
      */
-    private boolean removeMovie(long id) {
-        // This codes says: If the id is equal to the _ID, then delete that row
-        // If the number of rows deleted is more than 0, it will return true
-        return mDb.delete(FavouritesContract.FavouritesEntry.TABLE_NAME,
-                FavouritesContract.FavouritesEntry._ID + "=" + id, null) > 0;
+    private void removeMovie(long id) {
+
+        // Here we are building up the uri using the row_id in order to tell the ContentResolver
+        // to delete the item
+        String stringRowId = Long.toString(id);
+        Uri uri = FavouritesContract.FavouritesEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(stringRowId).build();
+
+        getContentResolver().delete(uri, null, null);
     }
 }
 
@@ -591,7 +604,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 //TODO 6 (DONE) Create A Button To Switch To The FavouriteMoviesActivity GridView, By Making The Current GridView "setVisibility(View.GONE)" And The FavouriteMoviesActivity GridView As Visible
 //TODO 7 (DONE) The FavouriteMovie SQL Needs To Contain The MOVIE_ID
 //TODO 8a(DONE) Now When A Movie Is Clicked On From The FavouriteMovie GridView It Needs To Launch An Intent To The Detail Activity
-//TODO 8b(DONE) TEMPORARLY WITH ItemTouchHelper) Now Pass Through The MOVIE_ID So We Can Create A "Get Details" Call In "TODO 10"
+//TODO 8b(DONE) TEMPORARILY WITH ItemTouchHelper) Now Pass Through The MOVIE_ID So We Can Create A "Get Details" Call In "TODO 10"
 //TODO 9 (DONE) Within The DetailActivity OnCreate Method We Need An If Statement To Check:
 // - if the activityThatLaunchedIt contains a MovieTitle it is from the Movie GridView
 // - else if the activityThatLaunchedIt contains a MOVIE_ID it is from the FavouriteMovie GridView
@@ -617,3 +630,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 //TODO C. Fix the back navigation, If in SQL Detail Activity Mode and go Back you land on MainActivity instead of FavouriteMovie Activity
 //TODO D. Switch from FavouriteMovieActivity to Fragment Instead??
 //TODO E. When Movie Is Deleted Ensure The FavouriteMovieActivity Refreshes Using The BroadCast Receiver??
+//TODO F. When a new film is marked as favourite it auto return to the MainActivity, instead it should stay on the detail activity page
+//TODO G. When deleting the last film from the SQL, the last film remains in the list instead of being deleted
+//TODO H. Add a header image to the DetailActivity
+//TODO I. Make app fullscreen
