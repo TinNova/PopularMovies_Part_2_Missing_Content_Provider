@@ -612,7 +612,8 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 //TODO F. When a new film is marked as favourite it auto return to the MainActivity, instead it should stay on the detail activity page
 //TODO G. When deleting the last film from the SQL, the last film remains in the list instead of being deleted
 //TODO H. Add a header image to the DetailActivity
-//TODO I. Make app fullscreen
+//TODO I. Make app fullscreen (remove the blue default header)
 //TODO J. App crashed on rotation on Favourites List
 //TODO K. When on top_rated on rotation it loads the popular list
 //TODO L. Hardcode dimensions
+//TODO M. Add a collapsing toolbar to the detail activity
