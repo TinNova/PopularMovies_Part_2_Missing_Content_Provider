@@ -3,10 +3,6 @@ package com.example.tin.popularmovies.Models;
 
 import java.io.Serializable;
 
-/**
- * Created by Tin on 02/11/2017.
- */
-
 public class FavouriteMovie implements Serializable {
 
     private final long row_id;

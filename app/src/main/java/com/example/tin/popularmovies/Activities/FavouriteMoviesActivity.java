@@ -2,7 +2,6 @@ package com.example.tin.popularmovies.Activities;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -14,7 +13,6 @@ import android.util.Log;
 
 import com.example.tin.popularmovies.Adapters.FavouritesAdapter;
 import com.example.tin.popularmovies.Data.FavouritesContract;
-import com.example.tin.popularmovies.Data.FavouritesDbHelper;
 import com.example.tin.popularmovies.Models.FavouriteMovie;
 import com.example.tin.popularmovies.R;
 
@@ -32,8 +30,7 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements Favour
     private static final int FAVOURITEMOVIES_LOADER_ID = 0;
 
     private RecyclerView favouriteRecyclerView;
-    private FavouritesAdapter favouritesAdapter;
-    List<FavouriteMovie> favouriteMovies;
+    private List<FavouriteMovie> favouriteMovies;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,13 +170,14 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements Favour
                 data.moveToNext();
             }
 
-            favouritesAdapter = new FavouritesAdapter(favouriteMovies, getApplicationContext(), FavouriteMoviesActivity.this);
+            FavouritesAdapter favouritesAdapter = new FavouritesAdapter(favouriteMovies, getApplicationContext(), FavouriteMoviesActivity.this);
             favouriteRecyclerView.setAdapter(favouritesAdapter);
 
         } else {
             Log.v(TAG, "cursor is Empty");
         }
 
+        assert data != null;
         data.close();
     }
 

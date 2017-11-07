@@ -14,7 +14,7 @@
 
     <item
         android:id="@+id/view_favourite_movies"
-        android:title="Favourites"
+        android:title="@string/favourites"
         app:showAsAction="never"/>
 
 </menu>

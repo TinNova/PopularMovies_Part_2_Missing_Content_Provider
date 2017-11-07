@@ -1,9 +1,5 @@
 package com.example.tin.popularmovies.Models;
 
-/**
- * Created by Tin on 21/10/2017.
- */
-
 public class Review {
 
     private final String userName;

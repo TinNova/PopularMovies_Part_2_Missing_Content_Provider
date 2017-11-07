@@ -12,10 +12,6 @@ import com.example.tin.popularmovies.R;
 
 import java.util.List;
 
-/**
- * Created by Tin on 21/10/2017.
- */
-
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder> {
 
 
@@ -68,8 +64,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView userNameTV;
-        TextView userReviewTV;
+        final TextView userNameTV;
+        final TextView userReviewTV;
 
 
         public ViewHolder(View itemView) {

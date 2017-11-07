@@ -8,26 +8,23 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import static com.example.tin.popularmovies.Data.FavouritesContract.FavouritesEntry.TABLE_NAME;
-
-/**
- * Created by Tin on 06/11/2017.
- */
 
 public class FavouritesContentProvider extends ContentProvider {
 
     // Defining final integer constants for the directory of favouritesMovies and a single Item
     // It's convention to use 100, 200, 300 ect for directories,
     // and related ints (101, 102, ..) for items in that directory.
-    public static final int FAVOURITEMOVIE = 100;
-    public static final int FAVOURITEMOVIE_WITH_ID = 101;
+    private static final int FAVOURITEMOVIE = 100;
+    private static final int FAVOURITEMOVIE_WITH_ID = 101;
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
     // Defining a static buildUriMatcher method that associates URI's with their int match
-    public static UriMatcher buildUriMatcher() {
+    private static UriMatcher buildUriMatcher() {
         // .NO_MATCH defines it as an empty uriMatcher (because we haven't added an int match yet
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -57,7 +54,7 @@ public class FavouritesContentProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
 
         /** WE STILL DO NOT HAVE A QUERY FOR A SINGLE ITEM*/
@@ -90,6 +87,7 @@ public class FavouritesContentProvider extends ContentProvider {
         }
 
         // Set a notification URI on the Cursor
+        assert retCursor != null;
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
 
         return retCursor;
@@ -97,13 +95,13 @@ public class FavouritesContentProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         return null;
     }
 
     @Nullable
     @Override
-    public Uri insert(Uri uri, ContentValues contentValues) {
+    public Uri insert(@NonNull Uri uri, ContentValues contentValues) {
 
         // Initialise the SQLite database as a getWritableDatabase so we can insert data
         final SQLiteDatabase favouritesDB = mFavouritesDbHelper.getWritableDatabase();
@@ -135,13 +133,14 @@ public class FavouritesContentProvider extends ContentProvider {
         }
 
         // Here we notify the resolver that the uri has been changed
+
         getContext().getContentResolver().notifyChange(uri, null);
 
         return returnUri;
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
 
         // Get access to the database and write URI matching code to recognise a single item
         final SQLiteDatabase db = mFavouritesDbHelper.getWritableDatabase();
@@ -175,7 +174,7 @@ public class FavouritesContentProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
+    public int update(@NonNull Uri uri, ContentValues contentValues, String s, String[] strings) {
         return 0;
     }
 }

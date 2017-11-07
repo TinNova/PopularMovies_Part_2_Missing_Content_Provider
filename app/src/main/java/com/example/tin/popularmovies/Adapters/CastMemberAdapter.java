@@ -14,10 +14,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-/**
- * Created by Tin on 18/10/2017.
- */
-
 public class CastMemberAdapter extends RecyclerView.Adapter<CastMemberAdapter.ViewHolder> {
 
 
@@ -73,9 +69,9 @@ public class CastMemberAdapter extends RecyclerView.Adapter<CastMemberAdapter.Vi
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView castMemberThumbnail;
-        TextView characterName;
-        TextView actorName;
+        final ImageView castMemberThumbnail;
+        final TextView characterName;
+        final TextView actorName;
 
 
         public ViewHolder(View itemView) {

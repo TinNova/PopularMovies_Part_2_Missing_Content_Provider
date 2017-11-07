@@ -50,13 +50,11 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
     private static final String TAG = DetailActivity.class.getSimpleName();
 
     // RecyclerView For Trailer
-    private String YOUTUBETRAILERSTART = "https://www.youtube.com/watch?v=";
+    private final String YOUTUBETRAILERSTART = "https://www.youtube.com/watch?v=";
     private RecyclerView trailerRecyclerView;
     private RecyclerView castMemberRecyclerView;
     private RecyclerView reviewRecyclerView;
     private RecyclerView.Adapter trailerAdapter;
-    private RecyclerView.Adapter castMemberAdapter;
-    private RecyclerView.Adapter reviewAdapter;
     private List<Trailer> trailers;
     private List<CastMember> castMembers;
     private List<Review> reviews;
@@ -70,19 +68,14 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     //private String mMovieId;
     private String movieId;
-    private String moviePoster;
     private String movieTitle;
-    private byte[] moviePosterSql;
     private long row_id;
 
     // This Is For The Favourite Icon In The Menu Item
-    MenuItem favouriteMenu;
-
-    // The SQL Database
-    private SQLiteDatabase mDb;
+    private MenuItem favouriteMenu;
 
     // Determines If A Movie Is Favourite Or Not, 0 = Not Favourite, 1 = Favourite
-    int favourite_NotFavourite;
+    private int favourite_NotFavourite;
 
 
     @Override
@@ -103,7 +96,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
             favourite_NotFavourite = 0;
 
-            moviePoster = intentThatStartedThisActivity.getStringExtra("MoviePoster");
+            String moviePoster = intentThatStartedThisActivity.getStringExtra("MoviePoster");
             movieTitle = intentThatStartedThisActivity.getStringExtra("MovieTitle");
             String movieSynopsis = intentThatStartedThisActivity.getStringExtra("MovieSynopsis");
             String movieUserRating = intentThatStartedThisActivity.getStringExtra("MovieUserRating");
@@ -118,7 +111,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
             MakeDetailUrlSearchQuery();
             Organise_RecyclerView_And_LayoutManagers();
-            InitialiseSqliteDatabase();
 
             //Else if DetailActivity was triggered by the FavouriteMoviesActivity
         } else if (intentThatStartedThisActivity.hasExtra("Row_Id")) {
@@ -131,8 +123,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             Log.v(TAG, "Row_ID: " + row_id);
 
             movieId = intentThatStartedThisActivity.getStringExtra("MovieSqlId");
-            moviePosterSql = intentThatStartedThisActivity.getByteArrayExtra("MoviePosterSql");
-
 
             URL getDetailSearchUrl = NetworkUtils.buildGetDetailUrl(movieId);
             new FetchGetDetailAsyncTask().execute(getDetailSearchUrl);
@@ -141,10 +131,8 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
             MakeDetailUrlSearchQuery();
             Organise_RecyclerView_And_LayoutManagers();
-            InitialiseSqliteDatabase();
 
         }
-
 
     }
 
@@ -345,7 +333,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
                         Log.v(TAG, "CastMembers List: " + castMembers);
                     }
 
-                    castMemberAdapter = new CastMemberAdapter(castMembers, getApplicationContext());
+                    RecyclerView.Adapter castMemberAdapter = new CastMemberAdapter(castMembers, getApplicationContext());
                     castMemberRecyclerView.setAdapter(castMemberAdapter);
 
 
@@ -404,7 +392,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
                         Log.v(TAG, "Reviews List: " + reviews);
                     }
 
-                    reviewAdapter = new ReviewAdapter(reviews, getApplicationContext());
+                    RecyclerView.Adapter reviewAdapter = new ReviewAdapter(reviews, getApplicationContext());
                     reviewRecyclerView.setAdapter(reviewAdapter);
 
 
@@ -444,17 +432,14 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
                 try {
                     // Define the entire feed as a JSONObject
-                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
-
-                    JSONObject movieJsonObject = theMovieDatabaseJsonObject;
 
                     Picasso.with(DetailActivity.this)
-                            .load(NetworkUtils.BASE_IMAGE_URL + movieJsonObject.getString("poster_path"))
+                            .load(NetworkUtils.BASE_IMAGE_URL + new JSONObject(movieResults).getString("poster_path"))
                             .into(mMoviePoster);
-                    mMovieTitle.setText(movieJsonObject.getString("original_title"));
-                    mMovieSynopsis.setText(movieJsonObject.getString("overview"));
-                    mMovieUserRating.setText(movieJsonObject.getString("vote_average"));
-                    mMovieReleaseDate.setText(movieJsonObject.getString("release_date"));
+                    mMovieTitle.setText(new JSONObject(movieResults).getString("original_title"));
+                    mMovieSynopsis.setText(new JSONObject(movieResults).getString("overview"));
+                    mMovieUserRating.setText(new JSONObject(movieResults).getString("vote_average"));
+                    mMovieReleaseDate.setText(new JSONObject(movieResults).getString("release_date"));
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -487,7 +472,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_SHORT).show();
         }
 
-        finish();
         // Here we return the mDb.insert Method, and specify the Table Name, and the ContentValues object
         // This will return a new row in the table with the values specified in the cv
         // Note: We didn't insert the Row ID, that's because we specified in the SQL onCreate statement
@@ -571,11 +555,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     }
 
-    private void InitialiseSqliteDatabase() {
-        FavouritesDbHelper dbHelper = new FavouritesDbHelper(this);
-        mDb = dbHelper.getWritableDatabase();
-    }
-
     /**
      * This Method Deletes a Movie form the Database
      * - It takes a long as the input which is the ID of the Row
@@ -634,3 +613,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 //TODO G. When deleting the last film from the SQL, the last film remains in the list instead of being deleted
 //TODO H. Add a header image to the DetailActivity
 //TODO I. Make app fullscreen
+//TODO J. App crashed on rotation on Favourites List
+//TODO K. When on top_rated on rotation it loads the popular list
+//TODO L. Hardcode dimensions

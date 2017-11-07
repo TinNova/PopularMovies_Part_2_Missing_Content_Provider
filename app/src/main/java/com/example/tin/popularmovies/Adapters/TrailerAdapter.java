@@ -14,18 +14,14 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-/**
- * Created by Tin on 16/10/2017.
- */
-
 public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHolder>{
 
 
     /** HOW THE THUMBNAIL IMAGE IS CONSTRUCTED
      * String thumbnailImage = "https://img.youtube.com/vi/" + trailers.getTrailerKey + "/0.jpg";
      */
-    private String YOUTUBETHUMBNAILSTART = "https://img.youtube.com/vi/";
-    private String YOUTUBETHUMBNAILEND = "/0.jpg";
+    private final String YOUTUBETHUMBNAILSTART = "https://img.youtube.com/vi/";
+    private final String YOUTUBETHUMBNAILEND = "/0.jpg";
 
     private final List<Trailer> trailers;
     private final Context context;
@@ -85,8 +81,8 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        ImageView trailerThumbNail;
-        TextView trailerTitle;
+        final ImageView trailerThumbNail;
+        final TextView trailerTitle;
 
         @Override
         public void onClick(View view) {

@@ -17,8 +17,9 @@ import java.util.List;
 
 public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.ViewHolder>{
 
-    private List<FavouriteMovie> favouriteMovies;
-    private Context context;
+    private final List<FavouriteMovie> favouriteMovies;
+    private final Context context;
+    //private Cursor mCursor;
 
     private final ListItemClickListener mOnClickListener;
 
@@ -56,7 +57,7 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.Vi
         // Here we convert the Movie Poster from a byte[] into a Bitmap
         Bitmap bitmapMoviePosterSql = BitmapFactory.decodeByteArray(moviePosterSql, 0, moviePosterSql.length);
         // Here we attach the converted Movie Poster to the ImageView
-        viewHolder.imageViewPosterIV.setImageBitmap(bitmapMoviePosterSql
+        viewHolder.imageViewPosterIV.setImageBitmap(Bitmap
                 .createScaledBitmap(bitmapMoviePosterSql, 342, 513, false));
 
     }
@@ -73,7 +74,7 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.Vi
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        ImageView imageViewPosterIV;
+        final ImageView imageViewPosterIV;
 
         @Override
         public void onClick(View view) {

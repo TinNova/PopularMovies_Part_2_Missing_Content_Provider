@@ -24,7 +24,6 @@
             </intent-filter>
         </activity>
 
-
         <activity
             android:name=".Activities.DetailActivity"
             android:parentActivityName=".Activities.MainActivity" />
@@ -39,7 +38,5 @@
             android:exported="false"/>
 
     </application>
-
-
 
 </manifest>

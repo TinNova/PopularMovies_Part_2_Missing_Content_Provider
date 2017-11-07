@@ -1,9 +1,5 @@
 package com.example.tin.popularmovies.Models;
 
-/**
- * Created by Tin on 16/10/2017.
- */
-
 public class Trailer {
 
     private final String trailerName;
