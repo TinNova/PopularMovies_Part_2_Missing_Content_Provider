@@ -91,10 +91,8 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
         Intent intentThatStartedThisActivity = getIntent();
 
-        //If DetailActivity was triggered by the MainActivity
+        //If DetailActivity was triggered by the popular or top_rated list (aka MainActivity)
         if (intentThatStartedThisActivity.hasExtra("MovieId")) {
-
-            // TODO HERE WE SHOULD QUERY THE CONTENT RESOLVER TO QUERY THE DATABASE, IF THE MOVIE ID OF THIS FILM EXISTS IN THE DATABASE THE FAVOURITE ICON SHOULD BE
 
             String moviePoster = intentThatStartedThisActivity.getStringExtra("MoviePoster");
             movieTitle = intentThatStartedThisActivity.getStringExtra("MovieTitle");
@@ -103,29 +101,42 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             String movieReleaseDate = intentThatStartedThisActivity.getStringExtra("MovieReleaseDate");
             movieId = intentThatStartedThisActivity.getStringExtra("MovieId");
 
-
-            // Here We Query To See If The movieId is in the database
+            /** Check If The Movie Is Saved As A Favourite Movie In The Database */
             // If it is in the database, we mark it as favourite in the Heart Icon else, it is marked as not favourite
             // This is important to prevent the same movie being added to the database twice.
+
+            // Single Item Query: Checking if the movieId is inside the database
             Cursor cursor = getContentResolver().query(
                     FavouritesContract.FavouritesEntry.CONTENT_URI,
                     null,
-                    FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID + "=" + movieId,
-                    new String[]{},
+                    FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID + "=?",
+                    new String[]{movieId},
                     FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID
             );
 
+
             Log.v(TAG, "Cursor = " + cursor);
 
-            if (cursor.getCount() != 0){ // The movie is in the database
-                // The Heart Icon Is Full White Indicating It's Favourite
+            // If the movieId is in the database
+            if (cursor.getCount() != 0){
+
+                cursor.moveToFirst();
+                // Assign the _ID to the long variable row_id, this allows the user to delete the Movie from the database
                 row_id = cursor.getLong(cursor.getColumnIndex(FavouritesContract.FavouritesEntry._ID));
+
+                // The Heart Icon Is Full White Indicating It's Favourite
                 favourite_NotFavourite = 1;
 
-            } else { // The movie is not in the database
+                Log.v(TAG, "ROW_ID: " + row_id);
+
+                // Else, the movie isn't in the database
+            } else {
                 // The Heart Icon Is A White Border Indicating Not Favourite
                 favourite_NotFavourite = 0;
             }
+
+            // Close the cursor
+            cursor.close();
 
             Picasso.with(this).load(moviePoster).into(mMoviePoster);
             mMovieTitle.setText(movieTitle);
