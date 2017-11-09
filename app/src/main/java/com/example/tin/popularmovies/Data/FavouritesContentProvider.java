@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import static com.example.tin.popularmovies.Data.FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID;
 import static com.example.tin.popularmovies.Data.FavouritesContract.FavouritesEntry.TABLE_NAME;
 
 public class FavouritesContentProvider extends ContentProvider {
@@ -57,8 +58,7 @@ public class FavouritesContentProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
 
-        /** WE STILL DO NOT HAVE A QUERY FOR A SINGLE ITEM*/
-
+        // Get access to underlying database (read-only for query)
         final SQLiteDatabase db = mFavouritesDbHelper.getReadableDatabase();
 
         int match = sUriMatcher.match(uri);
@@ -80,6 +80,23 @@ public class FavouritesContentProvider extends ContentProvider {
             // Query for a single item in the directory, we don't need one as we are saving everything
             // into a Model List called FavouriteMovie, from here we can select individual items
             // HOWEVER see "Lesson 10, Video 26. Query for One Item" to learn more...
+            case FAVOURITEMOVIE_WITH_ID:
+
+                // Get the row id from the URI
+                String id = uri.getPathSegments().get(1);
+
+                //Selection is from the Movie_ID Column (not to be confused with row _id
+                String mSelection = COLUMN_MOVIE_ID + "=?";
+                String[] mSelectionArgs = new String[]{id};
+
+                // Construct a query as usual, but passing in the selection and args
+                retCursor = db.query(TABLE_NAME,
+                        projection,
+                        mSelection,
+                        mSelectionArgs,
+                        null,
+                        null,
+                        sortOrder);
 
             // Default exception
             default:

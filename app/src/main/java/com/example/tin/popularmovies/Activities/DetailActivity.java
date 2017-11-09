@@ -2,7 +2,7 @@ package com.example.tin.popularmovies.Activities;
 
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -21,8 +21,8 @@ import android.widget.Toast;
 import com.example.tin.popularmovies.Adapters.CastMemberAdapter;
 import com.example.tin.popularmovies.Adapters.ReviewAdapter;
 import com.example.tin.popularmovies.Adapters.TrailerAdapter;
+import com.example.tin.popularmovies.Data.FavouritesContentProvider;
 import com.example.tin.popularmovies.Data.FavouritesContract;
-import com.example.tin.popularmovies.Data.FavouritesDbHelper;
 import com.example.tin.popularmovies.Models.CastMember;
 import com.example.tin.popularmovies.Models.Review;
 import com.example.tin.popularmovies.Models.Trailer;
@@ -94,7 +94,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         //If DetailActivity was triggered by the MainActivity
         if (intentThatStartedThisActivity.hasExtra("MovieId")) {
 
-            favourite_NotFavourite = 0;
+            // TODO HERE WE SHOULD QUERY THE CONTENT RESOLVER TO QUERY THE DATABASE, IF THE MOVIE ID OF THIS FILM EXISTS IN THE DATABASE THE FAVOURITE ICON SHOULD BE
 
             String moviePoster = intentThatStartedThisActivity.getStringExtra("MoviePoster");
             movieTitle = intentThatStartedThisActivity.getStringExtra("MovieTitle");
@@ -102,6 +102,30 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             String movieUserRating = intentThatStartedThisActivity.getStringExtra("MovieUserRating");
             String movieReleaseDate = intentThatStartedThisActivity.getStringExtra("MovieReleaseDate");
             movieId = intentThatStartedThisActivity.getStringExtra("MovieId");
+
+
+            // Here We Query To See If The movieId is in the database
+            // If it is in the database, we mark it as favourite in the Heart Icon else, it is marked as not favourite
+            // This is important to prevent the same movie being added to the database twice.
+            Cursor cursor = getContentResolver().query(
+                    FavouritesContract.FavouritesEntry.CONTENT_URI,
+                    null,
+                    FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID + "=" + movieId,
+                    new String[]{},
+                    FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID
+            );
+
+            Log.v(TAG, "Cursor = " + cursor);
+
+            if (cursor.getCount() != 0){ // The movie is in the database
+                // The Heart Icon Is Full White Indicating It's Favourite
+                row_id = cursor.getLong(cursor.getColumnIndex(FavouritesContract.FavouritesEntry._ID));
+                favourite_NotFavourite = 1;
+
+            } else { // The movie is not in the database
+                // The Heart Icon Is A White Border Indicating Not Favourite
+                favourite_NotFavourite = 0;
+            }
 
             Picasso.with(this).load(moviePoster).into(mMoviePoster);
             mMovieTitle.setText(movieTitle);
@@ -115,6 +139,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             //Else if DetailActivity was triggered by the FavouriteMoviesActivity
         } else if (intentThatStartedThisActivity.hasExtra("Row_Id")) {
 
+            // The Heart Icon Is Fully White Indicating It Is Favourite
             favourite_NotFavourite = 1;
 
 
@@ -147,8 +172,9 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         getMenuInflater().inflate(R.menu.menu_detail, menu);
         favouriteMenu = menu.findItem(R.id.favourite);
 
-        // Assign Correct Heart Icon
-        // If 0 = Not Favourite, so add the white border icon
+        // WE SHOULD QUERY THE DATABASE FIRST
+
+        // Assign Correct Heart Icon: If 0 = Not Favourite, so add the white border icon
         if (favourite_NotFavourite == 0) {
             favouriteMenu.setIcon(R.drawable.ic_favorite_border_white_24dp);
             // else if 1 = Favourite, so add the full white icon
@@ -569,6 +595,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         uri = uri.buildUpon().appendPath(stringRowId).build();
 
         getContentResolver().delete(uri, null, null);
+
     }
 }
 

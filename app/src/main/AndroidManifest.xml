@@ -14,11 +14,11 @@
         android:theme="@style/AppTheme">
 
         <!--Parent Activity-->
-        <activity android:name=".Activities.MainActivity">
+        <activity
+            android:name=".Activities.MainActivity"
+            android:launchMode="singleTop">
             <intent-filter>
-                <action
-                    android:name="android.intent.action.MAIN"
-                    android:launchMode="singleTop" />
+                <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -33,9 +33,9 @@
             android:parentActivityName=".Activities.MainActivity" />
 
         <provider
-            android:authorities="com.example.tin.popularmovies"
             android:name="com.example.tin.popularmovies.Data.FavouritesContentProvider"
-            android:exported="false"/>
+            android:authorities="com.example.tin.popularmovies"
+            android:exported="false" />
 
     </application>
 
