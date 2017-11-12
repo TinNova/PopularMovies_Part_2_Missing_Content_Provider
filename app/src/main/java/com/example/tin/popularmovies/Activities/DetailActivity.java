@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.AsyncTask;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,7 +23,6 @@ import android.widget.Toast;
 import com.example.tin.popularmovies.Adapters.CastMemberAdapter;
 import com.example.tin.popularmovies.Adapters.ReviewAdapter;
 import com.example.tin.popularmovies.Adapters.TrailerAdapter;
-import com.example.tin.popularmovies.Data.FavouritesContentProvider;
 import com.example.tin.popularmovies.Data.FavouritesContract;
 import com.example.tin.popularmovies.Models.CastMember;
 import com.example.tin.popularmovies.Models.Review;
@@ -48,6 +49,17 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     // TAG to help catch errors in Log
     private static final String TAG = DetailActivity.class.getSimpleName();
+
+    private static final String DETAIL_RESULTS_RAW_JSON = "results";
+    private static final String CAST_MEMBER_RESULTS_RAW_JSON = "results";
+    private static final String TRAILER_RESULTS_RAW_JSON = "results";
+    private static final String REVIEW_RESULTS_RAW_JSON = "results";
+
+    // Strings For The Raw Json Feeds Of The AsyncTask Network Calls
+    String movieDetailResults;
+    String movieReviewResults;
+    String movieCastResults;
+    String movieTrailerResults;
 
     // RecyclerView For Trailer
     private final String YOUTUBETRAILERSTART = "https://www.youtube.com/watch?v=";
@@ -91,84 +103,65 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
         Intent intentThatStartedThisActivity = getIntent();
 
-        //If DetailActivity was triggered by the popular or top_rated list (aka MainActivity)
-        if (intentThatStartedThisActivity.hasExtra("MovieId")) {
+       if (savedInstanceState != null) {
+//
+            String movieDetailJsonResults = savedInstanceState.getString(DETAIL_RESULTS_RAW_JSON);
+//
+            Log.v(TAG,"detailResultsToView: " + movieDetailJsonResults);
+            detailResultsToView(movieDetailJsonResults);
+//            //castResultsToList(savedInstanceState.getString(CAST_MEMBER_RESULTS_RAW_JSON));
+//            //trailerResultsToList(savedInstanceState.getString(TRAILER_RESULTS_RAW_JSON));
+//            //reviewResultsToList(savedInstanceState.getString(REVIEW_RESULTS_RAW_JSON));
+//
+       } else {
 
-            String moviePoster = intentThatStartedThisActivity.getStringExtra("MoviePoster");
-            movieTitle = intentThatStartedThisActivity.getStringExtra("MovieTitle");
-            String movieSynopsis = intentThatStartedThisActivity.getStringExtra("MovieSynopsis");
-            String movieUserRating = intentThatStartedThisActivity.getStringExtra("MovieUserRating");
-            String movieReleaseDate = intentThatStartedThisActivity.getStringExtra("MovieReleaseDate");
-            movieId = intentThatStartedThisActivity.getStringExtra("MovieId");
+           //If DetailActivity was triggered by the popular or top_rated list (aka MainActivity)
+           if (intentThatStartedThisActivity.hasExtra("MovieId")) {
 
-            /** Check If The Movie Is Saved As A Favourite Movie In The Database */
-            // If it is in the database, we mark it as favourite in the Heart Icon else, it is marked as not favourite
-            // This is important to prevent the same movie being added to the database twice.
+               String moviePoster = intentThatStartedThisActivity.getStringExtra("MoviePoster");
+               movieTitle = intentThatStartedThisActivity.getStringExtra("MovieTitle");
+               String movieSynopsis = intentThatStartedThisActivity.getStringExtra("MovieSynopsis");
+               String movieUserRating = intentThatStartedThisActivity.getStringExtra("MovieUserRating");
+               String movieReleaseDate = intentThatStartedThisActivity.getStringExtra("MovieReleaseDate");
+               movieId = intentThatStartedThisActivity.getStringExtra("MovieId");
 
-            // Single Item Query: Checking if the movieId is inside the database
-            Cursor cursor = getContentResolver().query(
-                    FavouritesContract.FavouritesEntry.CONTENT_URI,
-                    null,
-                    FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID + "=?",
-                    new String[]{movieId},
-                    FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID
-            );
+               /** Check If The Movie Is Saved As A Favourite Movie In The Database */
+               // If it is in the database, we mark it as favourite in the Heart Icon else, it is marked as not favourite
+               // This is important to prevent the same movie being added to the database twice.
+               isMovieFavouriteFull();
 
+               Picasso.with(this).load(moviePoster).into(mMoviePoster);
+               mMovieTitle.setText(movieTitle);
+               mMovieSynopsis.setText(movieSynopsis);
+               mMovieUserRating.setText(movieUserRating);
+               mMovieReleaseDate.setText(movieReleaseDate);
 
-            Log.v(TAG, "Cursor = " + cursor);
+               MakeDetailUrlSearchQuery();
+               Organise_RecyclerView_And_LayoutManagers();
 
-            // If the movieId is in the database
-            if (cursor.getCount() != 0){
+               //Else if DetailActivity was triggered by the FavouriteMoviesActivity
+           } else if (intentThatStartedThisActivity.hasExtra("Row_Id")) {
 
-                cursor.moveToFirst();
-                // Assign the _ID to the long variable row_id, this allows the user to delete the Movie from the database
-                row_id = cursor.getLong(cursor.getColumnIndex(FavouritesContract.FavouritesEntry._ID));
-
-                // The Heart Icon Is Full White Indicating It's Favourite
-                favourite_NotFavourite = 1;
-
-                Log.v(TAG, "ROW_ID: " + row_id);
-
-                // Else, the movie isn't in the database
-            } else {
-                // The Heart Icon Is A White Border Indicating Not Favourite
-                favourite_NotFavourite = 0;
-            }
-
-            // Close the cursor
-            cursor.close();
-
-            Picasso.with(this).load(moviePoster).into(mMoviePoster);
-            mMovieTitle.setText(movieTitle);
-            mMovieSynopsis.setText(movieSynopsis);
-            mMovieUserRating.setText(movieUserRating);
-            mMovieReleaseDate.setText(movieReleaseDate);
-
-            MakeDetailUrlSearchQuery();
-            Organise_RecyclerView_And_LayoutManagers();
-
-            //Else if DetailActivity was triggered by the FavouriteMoviesActivity
-        } else if (intentThatStartedThisActivity.hasExtra("Row_Id")) {
-
-            // The Heart Icon Is Fully White Indicating It Is Favourite
-            favourite_NotFavourite = 1;
+               // The Heart Icon Is Fully White Indicating It Is Favourite
+               favourite_NotFavourite = 1;
 
 
-            // In getLongExtra the second value is the default value that will be used if the Long can't be found
-            row_id = intentThatStartedThisActivity.getLongExtra("Row_Id", -1);
-            Log.v(TAG, "Row_ID: " + row_id);
+               // In getLongExtra the second value is the default value that will be used if the Long can't be found
+               row_id = intentThatStartedThisActivity.getLongExtra("Row_Id", -1);
+               Log.v(TAG, "Row_ID: " + row_id);
 
-            movieId = intentThatStartedThisActivity.getStringExtra("MovieSqlId");
+               movieId = intentThatStartedThisActivity.getStringExtra("MovieSqlId");
 
-            URL getDetailSearchUrl = NetworkUtils.buildGetDetailUrl(movieId);
-            new FetchGetDetailAsyncTask().execute(getDetailSearchUrl);
-            Log.v(TAG, "MakeGetDetailUrlSearchQuery: " + getDetailSearchUrl);
+               URL getDetailSearchUrl = NetworkUtils.buildGetDetailUrl(movieId);
+               new FetchGetDetailAsyncTask().execute(getDetailSearchUrl);
+               Log.v(TAG, "MakeGetDetailUrlSearchQuery: " + getDetailSearchUrl);
 
 
-            MakeDetailUrlSearchQuery();
-            Organise_RecyclerView_And_LayoutManagers();
+               MakeDetailUrlSearchQuery();
+               Organise_RecyclerView_And_LayoutManagers();
 
-        }
+           }
+       }
 
     }
 
@@ -182,8 +175,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         // This adds menu items to the app bar.
         getMenuInflater().inflate(R.menu.menu_detail, menu);
         favouriteMenu = menu.findItem(R.id.favourite);
-
-        // WE SHOULD QUERY THE DATABASE FIRST
 
         // Assign Correct Heart Icon: If 0 = Not Favourite, so add the white border icon
         if (favourite_NotFavourite == 0) {
@@ -207,27 +198,25 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
             case R.id.favourite:
                 // If the movie is NOT in the favourite database, add it to favourites
-                if (favourite_NotFavourite == 0) {
+                if (isMovieFavourite() == null) {
 
                     // Change the Heart Icon from white outline to white heart
                     favouriteMenu.setIcon(R.drawable.ic_favorite_white_24dp);
-                    // Change int to 1 which represents a favourite film
-                    favourite_NotFavourite = 1;
+
                     // Method which adds Movie to SQL
                     convertImageViewAndAddDataToSql(mMoviePoster);
-                    Toast.makeText(this, "Added To Favourites!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Added To Favourites!", Toast.LENGTH_SHORT).show();
 
 
-                    // If the movie IS in the favourite database, remove it
-                } else if (favourite_NotFavourite == 1) {
+                    // Else the movie IS in the favourite database, so remove it
+                } else {
 
                     // Change the Heart Icon from white heart to white outline
                     favouriteMenu.setIcon(R.drawable.ic_favorite_border_white_24dp);
-                    // Change into to 0 which represents a non-favourite film
-                    favourite_NotFavourite = 0;
+
                     // Method which deletes Movie from SQL
                     removeMovie(row_id);
-                    Toast.makeText(this, "Removed From Favourites!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Removed From Favourites!", Toast.LENGTH_SHORT).show();
 
                 }
 
@@ -268,19 +257,19 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         @Override
         protected String doInBackground(URL... params) {
             URL searchUrl = params[0];
-            String movieResults = null;
+            movieTrailerResults = null;
 
 
             try {
 
-                movieResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+                movieTrailerResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
 
             } catch (IOException e) {
                 e.printStackTrace();
 
             }
 
-            return movieResults;
+            return movieTrailerResults;
         }
 
         @Override
@@ -288,35 +277,8 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             if (movieResults != null && !movieResults.equals("")) {
 
                 /** PARSING JSON */
+                trailerResultsToList(movieResults);
 
-                try {
-                    // Define the entire feed as a JSONObject
-                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
-                    // Define the "results" JsonArray as a JSONArray
-                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
-                    // Now we need to get the individual Movie JsonObjects from the resultArray
-                    // using a for loop
-                    for (int i = 0; i < resultsArray.length(); i++) {
-
-                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
-
-                        Trailer trailer = new Trailer(
-                                movieJsonObject.getString("name"),
-                                movieJsonObject.getString("key")
-                        );
-
-                        trailers.add(trailer);
-
-                        Log.v(TAG, "Trailers List: " + trailers);
-                    }
-
-                    trailerAdapter = new TrailerAdapter(trailers, getApplicationContext(), DetailActivity.this);
-                    trailerRecyclerView.setAdapter(trailerAdapter);
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }
@@ -326,19 +288,19 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         @Override
         protected String doInBackground(URL... params) {
             URL searchUrl = params[0];
-            String movieResults = null;
+            movieCastResults = null;
 
 
             try {
 
-                movieResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+                movieCastResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
 
             } catch (IOException e) {
                 e.printStackTrace();
 
             }
-            Log.v(TAG, "CastMember: " + movieResults);
-            return movieResults;
+            Log.v(TAG, "CastMember: " + movieCastResults);
+            return movieCastResults;
 
         }
 
@@ -347,36 +309,8 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             if (movieResults != null && !movieResults.equals("")) {
 
                 /** PARSING JSON */
+                castResultsToList(movieResults);
 
-                try {
-                    // Define the entire feed as a JSONObject
-                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
-                    // Define the "results" JsonArray as a JSONArray
-                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("cast");
-                    // Now we need to get the individual Movie JsonObjects from the resultArray
-                    // using a for loop
-                    for (int i = 0; i < resultsArray.length(); i++) {
-
-                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
-
-                        CastMember castMember = new CastMember(
-                                movieJsonObject.getString("character"),
-                                movieJsonObject.getString("name"),
-                                movieJsonObject.getString("profile_path")
-                        );
-
-                        castMembers.add(castMember);
-
-                        Log.v(TAG, "CastMembers List: " + castMembers);
-                    }
-
-                    RecyclerView.Adapter castMemberAdapter = new CastMemberAdapter(castMembers, getApplicationContext());
-                    castMemberRecyclerView.setAdapter(castMemberAdapter);
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }
@@ -386,19 +320,19 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         @Override
         protected String doInBackground(URL... params) {
             URL searchUrl = params[0];
-            String movieResults = null;
+            movieReviewResults = null;
 
 
             try {
 
-                movieResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+                movieReviewResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
 
             } catch (IOException e) {
                 e.printStackTrace();
 
             }
-            Log.v(TAG, "Review: " + movieResults);
-            return movieResults;
+            Log.v(TAG, "Review: " + movieReviewResults);
+            return movieReviewResults;
 
         }
 
@@ -407,35 +341,8 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             if (movieResults != null && !movieResults.equals("")) {
 
                 /** PARSING JSON */
+                reviewResultsToList(movieResults);
 
-                try {
-                    // Define the entire feed as a JSONObject
-                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
-                    // Define the "results" JsonArray as a JSONArray
-                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
-                    // Now we need to get the individual Movie JsonObjects from the resultArray
-                    // using a for loop
-                    for (int i = 0; i < resultsArray.length(); i++) {
-
-                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
-
-                        Review review = new Review(
-                                movieJsonObject.getString("author"),
-                                movieJsonObject.getString("content")
-                        );
-
-                        reviews.add(review);
-
-                        Log.v(TAG, "Reviews List: " + reviews);
-                    }
-
-                    RecyclerView.Adapter reviewAdapter = new ReviewAdapter(reviews, getApplicationContext());
-                    reviewRecyclerView.setAdapter(reviewAdapter);
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }
@@ -445,42 +352,29 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         @Override
         protected String doInBackground(URL... params) {
             URL searchUrl = params[0];
-            String movieResults = null;
+            movieDetailResults = null;
 
 
             try {
 
-                movieResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+                movieDetailResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
 
             } catch (IOException e) {
                 e.printStackTrace();
 
             }
-            Log.v(TAG, "GetDetail: " + movieResults);
-            return movieResults;
+            Log.v(TAG, "GetDetail: " + movieDetailResults);
+            return movieDetailResults;
 
         }
 
         @Override
-        protected void onPostExecute(String movieResults) {
-            if (movieResults != null && !movieResults.equals("")) {
+        protected void onPostExecute(String movieDetailResults) {
+            if (movieDetailResults != null && !movieDetailResults.equals("")) {
 
                 /** PARSING JSON */
+                detailResultsToView(movieDetailResults);
 
-                try {
-                    // Define the entire feed as a JSONObject
-
-                    Picasso.with(DetailActivity.this)
-                            .load(NetworkUtils.BASE_IMAGE_URL + new JSONObject(movieResults).getString("poster_path"))
-                            .into(mMoviePoster);
-                    mMovieTitle.setText(new JSONObject(movieResults).getString("original_title"));
-                    mMovieSynopsis.setText(new JSONObject(movieResults).getString("overview"));
-                    mMovieUserRating.setText(new JSONObject(movieResults).getString("vote_average"));
-                    mMovieReleaseDate.setText(new JSONObject(movieResults).getString("release_date"));
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }
@@ -527,7 +421,10 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         byte[] data = baos.toByteArray();
 
-        addNewMovie(movieId, movieTitle, data);
+        String mMovieTitle2 = (String) mMovieTitle.getText();
+        addNewMovie(movieId, mMovieTitle2, data);
+
+        Log.v(TAG, "addNewMovie Params: " + movieId + ", " + movieTitle + ", " + data);
 
     }
 
@@ -608,10 +505,237 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         getContentResolver().delete(uri, null, null);
 
     }
+
+    private Cursor isMovieFavourite() {
+
+        // If it is in the database, we mark it as favourite in the Heart Icon else, it is marked as not favourite
+        // This is important to prevent the same movie being added to the database twice.
+
+        // Single Item Query: Checking if the movieId is inside the database
+        Cursor cursor = getContentResolver().query(
+                FavouritesContract.FavouritesEntry.CONTENT_URI,
+                null,
+                FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID + "=?",
+                new String[]{movieId},
+                FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID
+        );
+
+        // If the movieId is in the database
+        if (cursor.getCount() != 0) {
+
+            return cursor;
+
+        } else {
+
+            return null;
+
+        }
+    }
+
+    /**
+     * Check If The Movie Is Saved As A Favourite Movie In The Database
+     */
+    private void isMovieFavouriteFull() {
+
+        Cursor cursor = isMovieFavourite();
+
+        Log.v(TAG, "Cursor = " + cursor);
+
+        // If the movieId is in the database
+        if (cursor != null) {
+
+            try {
+                cursor.moveToFirst();
+                // Assign the _ID to the long variable row_id, this allows the user to delete the Movie from the database
+                row_id = cursor.getLong(cursor.getColumnIndex(FavouritesContract.FavouritesEntry._ID));
+
+                // The Heart Icon Is Full White Indicating It's Favourite
+                favourite_NotFavourite = 1;
+
+            } catch (Exception e) {
+                Log.v(TAG, "Couldn't Recognise Cursor: " + cursor);
+            }
+            // try finally will guarantee the cursor is closed
+            finally {
+                cursor.close();
+            }
+
+            Log.v(TAG, "ROW_ID: " + row_id);
+
+            // Else, the movie isn't in the database
+        } else {
+            // The Heart Icon Is A White Border Indicating Not Favourite
+            favourite_NotFavourite = 0;
+        }
+
+    }
+
+    /**
+     * Code Which Parses The GetDetail, GetReview, GetCast, GetTrailer Raw Jsons
+     */
+    private void detailResultsToView(String movieDetailResults) {
+        try {
+
+            // Parse The Raw Json Into The Views
+            Picasso.with(DetailActivity.this)
+                    .load(NetworkUtils.BASE_IMAGE_URL + new JSONObject(movieDetailResults).getString("poster_path"))
+                    .into(mMoviePoster);
+            mMovieTitle.setText(new JSONObject(movieDetailResults).getString("original_title"));
+            mMovieSynopsis.setText(new JSONObject(movieDetailResults).getString("overview"));
+            mMovieUserRating.setText(new JSONObject(movieDetailResults).getString("vote_average"));
+            mMovieReleaseDate.setText(new JSONObject(movieDetailResults).getString("release_date"));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void reviewResultsToList(String movieResults) {
+        try {
+            // Define the entire feed as a JSONObject
+            JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
+            // Define the "results" JsonArray as a JSONArray
+            JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
+            // Now we need to get the individual Movie JsonObjects from the resultArray
+            // using a for loop
+            for (int i = 0; i < resultsArray.length(); i++) {
+
+                JSONObject movieJsonObject = resultsArray.getJSONObject(i);
+
+                Review review = new Review(
+                        movieJsonObject.getString("author"),
+                        movieJsonObject.getString("content")
+                );
+
+                reviews.add(review);
+
+                Log.v(TAG, "Reviews List: " + reviews);
+            }
+
+            RecyclerView.Adapter reviewAdapter = new ReviewAdapter(reviews, getApplicationContext());
+            reviewRecyclerView.setAdapter(reviewAdapter);
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void castResultsToList(String movieResults) {
+
+        try {
+            // Define the entire feed as a JSONObject
+            JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
+            // Define the "results" JsonArray as a JSONArray
+            JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("cast");
+            // Now we need to get the individual Movie JsonObjects from the resultArray
+            // using a for loop
+            for (int i = 0; i < resultsArray.length(); i++) {
+
+                JSONObject movieJsonObject = resultsArray.getJSONObject(i);
+
+                CastMember castMember = new CastMember(
+                        movieJsonObject.getString("character"),
+                        movieJsonObject.getString("name"),
+                        movieJsonObject.getString("profile_path")
+                );
+
+                castMembers.add(castMember);
+
+                Log.v(TAG, "CastMembers List: " + castMembers);
+            }
+
+            RecyclerView.Adapter castMemberAdapter = new CastMemberAdapter(castMembers, getApplicationContext());
+            castMemberRecyclerView.setAdapter(castMemberAdapter);
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void trailerResultsToList(String movieResults) {
+        try {
+            // Define the entire feed as a JSONObject
+            JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
+            // Define the "results" JsonArray as a JSONArray
+            JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
+            // Now we need to get the individual Movie JsonObjects from the resultArray
+            // using a for loop
+            for (int i = 0; i < resultsArray.length(); i++) {
+
+                JSONObject movieJsonObject = resultsArray.getJSONObject(i);
+
+                Trailer trailer = new Trailer(
+                        movieJsonObject.getString("name"),
+                        movieJsonObject.getString("key")
+                );
+
+                trailers.add(trailer);
+
+                Log.v(TAG, "Trailers List: " + trailers);
+            }
+
+            trailerAdapter = new TrailerAdapter(trailers, getApplicationContext(), DetailActivity.this);
+            trailerRecyclerView.setAdapter(trailerAdapter);
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /** onSaveInstanceState
+     * Here We Are:
+     * 1. Saving The Raw Json Feeds
+     * 2. Activating The  Methods That Will Parse These Feeds And Populate The Views & RecylerViews
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        String movieDetailJsonResults = movieDetailResults;
+        outState.putString(DETAIL_RESULTS_RAW_JSON, movieDetailJsonResults);
+//        outState.putString(CAST_MEMBER_RESULTS_RAW_JSON, movieCastResults);
+//        outState.putString(TRAILER_RESULTS_RAW_JSON, movieTrailerResults);
+//        outState.putString(REVIEW_RESULTS_RAW_JSON, movieReviewResults);
+
+    }
 }
 
 /**
  * TODOS Step 1 - Adding Favourites - COMPLETED
+ * <p>
+ * TODOS Step 2 - Adding Content Provider
+ * <p>
+ * TODOs Step 3 - LifeCycles & Background Tasks
+ * <p>
+ * EXTRA TODOS TO MAKE THE APP BETTER
+ * <p>
+ * TODOS Step 2 - Adding Content Provider
+ * <p>
+ * TODOs Step 3 - LifeCycles & Background Tasks
+ * <p>
+ * EXTRA TODOS TO MAKE THE APP BETTER
+ * <p>
+ * TODOS Step 2 - Adding Content Provider
+ * <p>
+ * TODOs Step 3 - LifeCycles & Background Tasks
+ * <p>
+ * EXTRA TODOS TO MAKE THE APP BETTER
+ * <p>
+ * TODOS Step 2 - Adding Content Provider
+ * <p>
+ * TODOs Step 3 - LifeCycles & Background Tasks
+ * <p>
+ * EXTRA TODOS TO MAKE THE APP BETTER
+ * <p>
+ * TODOS Step 2 - Adding Content Provider
+ * <p>
+ * TODOs Step 3 - LifeCycles & Background Tasks
+ * <p>
+ * EXTRA TODOS TO MAKE THE APP BETTER
  */
 //TODO 1 (DONE) Create A Star Button That Launches A Toast (But In The Future It Will Save The Film In The SQL & The Favourites Section Of The App)
 //TODO 2 (DONE) Design The SQL Table & Create An SQL Contract
@@ -642,16 +766,17 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 /**
  * EXTRA TODOS TO MAKE THE APP BETTER
  */
-//TODO A. Prevent the same film being added twice to SQL.
-//TODO B. Be able to see if Movie is favourite even when checking it from either the MainActivity or the Favourite Activity
+//COMPLETED A. Prevent the same film being added twice to SQL.
+//COMPLETED B. DONE Be able to see if Movie is favourite even when checking it from either the MainActivity or the Favourite Activity
 //TODO C. Fix the back navigation, If in SQL Detail Activity Mode and go Back you land on MainActivity instead of FavouriteMovie Activity
 //TODO D. Switch from FavouriteMovieActivity to Fragment Instead??
-//TODO E. When Movie Is Deleted Ensure The FavouriteMovieActivity Refreshes Using The BroadCast Receiver??
-//TODO F. When a new film is marked as favourite it auto return to the MainActivity, instead it should stay on the detail activity page
+//COMPLETED E. When Movie Is Deleted Ensure The FavouriteMovieActivity Refreshes Using The BroadCast Receiver??
+//COMPLETED F. When a new film is marked as favourite it auto return to the MainActivity, instead it should stay on the detail activity page
 //TODO G. When deleting the last film from the SQL, the last film remains in the list instead of being deleted
-//TODO H. Add a header image to the DetailActivity
+//TODO H. Add a Collapsing Toolbar to DetailActivity
 //TODO I. Make app fullscreen (remove the blue default header)
 //TODO J. App crashed on rotation on Favourites List
 //TODO K. When on top_rated on rotation it loads the popular list
 //TODO L. Hardcode dimensions
 //TODO M. Add a collapsing toolbar to the detail activity
+//TODO N. LogCat Error keeps saying "E/RecyclerView: No adapter attached; skipping layout"
