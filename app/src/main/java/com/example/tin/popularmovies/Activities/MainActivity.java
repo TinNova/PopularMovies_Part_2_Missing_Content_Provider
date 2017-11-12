@@ -3,6 +3,7 @@ package com.example.tin.popularmovies.Activities;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,6 +39,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
     // TAG to help catch errors in Log
     private static final String TAG = MainActivity.class.getSimpleName();
+    // Key Strings For Save Instance State
+    private static final String MENU_ITEM_SELECTED = "menu_item_selected";
+    private static final String FILTER_TYPE = "filter_type";
+
 
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter adapter;
@@ -50,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
     // How to filter the view, 0 = Popular Films, 1 = Top Rated Films
     private int filterType = 0;
-
+    private int menuId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +84,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         mRecyclerView.setLayoutManager(mGridLayoutManager);
 
         movies = new ArrayList<>();
+
+        if (savedInstanceState != null) {
+            // Setting the values retrieved from onStateInstanceState
+            menuId = savedInstanceState.getInt(MENU_ITEM_SELECTED);
+            filterType = savedInstanceState.getInt(FILTER_TYPE);
+        }
 
 
         // Check if connected to internet, if false show an error
@@ -134,6 +145,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         // This adds menu items to the app bar.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Putting the integer values as filterType and menuId are both int based values
+        outState.putInt(MENU_ITEM_SELECTED, menuId);
+        outState.putInt(FILTER_TYPE, filterType);
     }
 
     /**

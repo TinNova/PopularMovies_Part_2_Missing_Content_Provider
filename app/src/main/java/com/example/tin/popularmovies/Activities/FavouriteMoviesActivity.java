@@ -2,6 +2,7 @@ package com.example.tin.popularmovies.Activities;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.PersistableBundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -26,6 +27,8 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements Favour
 
     // TAG to help catch errors in Log
     private static final String TAG = FavouriteMoviesActivity.class.getSimpleName();
+    // Constant to save state of the loader
+    private static final String ROTATION_TAG = "rotation_tag";
     // Constant for logging and referring to a unique loader
     private static final int FAVOURITEMOVIES_LOADER_ID = 0;
 
@@ -43,6 +46,10 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements Favour
                 new GridLayoutManager(this, 2);
         favouriteRecyclerView.setLayoutManager(favouriteGridLayoutManager);
         favouriteMovies = new ArrayList<>();
+
+        if (savedInstanceState != null) {
+            getSupportLoaderManager().restartLoader(savedInstanceState.getInt(ROTATION_TAG), null, this);
+        }
 
         /*
          Ensure a loader is initialized and active. If the loader doesn't already exist, one is
@@ -64,6 +71,13 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements Favour
         favouriteMovies.clear();
         // re-queries for all of the favouriteMovies
         getSupportLoaderManager().restartLoader(FAVOURITEMOVIES_LOADER_ID, null, this);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt(ROTATION_TAG, FAVOURITEMOVIES_LOADER_ID);
     }
 
     /**
