@@ -326,3 +326,26 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
     }
 
 }
+
+/**
+ * EXTRA TODOS TO MAKE THE APP BETTER
+ */
+//COMPLETED A. Prevent the same film being added twice to SQL.
+//COMPLETED B. DONE Be able to see if Movie is favourite even when checking it from either the MainActivity or the Favourite Activity
+//TODO C. Fix the back navigation, If in SQL Detail Activity Mode and go Back you land on MainActivity instead of FavouriteMovie Activity
+//TODO D. Switch from FavouriteMovieActivity to Fragment Instead??
+//COMPLETED E. When Movie Is Deleted Ensure The FavouriteMovieActivity Refreshes Using The BroadCast Receiver??
+//COMPLETED F. When a new film is marked as favourite it auto return to the MainActivity, instead it should stay on the detail activity page
+//TODO G. When deleting the last film from the SQL, the last film remains in the list instead of being deleted
+//TODO H. Add a Collapsing Toolbar to DetailActivity
+//TODO I. Make app fullscreen (remove the blue default header)
+//COMPLETED J. App crashed on rotation on Favourites List
+//COMPLETED K. When on top_rated on rotation it loads the popular list
+//TODO L. Hardcode dimensions
+//TODO M. Add a collapsing toolbar to the detail activity
+//TODO N. LogCat Error keeps saying "E/RecyclerView: No adapter attached; skipping layout"
+//TODO O. Use Parceble in the Model Lists to pass the data
+//TODO P. Use a Bundle in the intents to pass data
+//TODO Q. Save the scroll position in the DetailActivity
+//TODO R. Combine MovieActivity & FavouriteMoviesActivity (consider Fragment or another method)
+//TODO S. On MainActivity Landscape mode, use a 4 column grid instead of 2
