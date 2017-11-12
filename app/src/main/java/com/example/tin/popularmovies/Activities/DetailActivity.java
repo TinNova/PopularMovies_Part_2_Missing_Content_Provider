@@ -1,13 +1,12 @@
 package com.example.tin.popularmovies.Activities;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.AsyncTask;
-import android.os.PersistableBundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -40,23 +39,24 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_TRAILERS;
-import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_CREDITS;
-import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_REVIEWS;
-
-public class DetailActivity extends AppCompatActivity implements TrailerAdapter.TrailerListItemClickListener, LoaderManager.LoaderCallbacks<String> {
+public class DetailActivity extends AppCompatActivity implements TrailerAdapter.TrailerListItemClickListener {
 
     // TAG to help catch errors in Log
     private static final String TAG = DetailActivity.class.getSimpleName();
 
     private static final String GET_DETAIL_SEARCH_URL = "get_detail_search_url";
+    private static final String GET_TRAILER_SEARCH_URL = "get_trailer_search_url";
+    private static final String GET_CAST_SEARCH_URL = "get_case_search_url";
+    private static final String GET_REVIEW_SEARCH_URL = "get_review_search_url";
 
     private static final int GET_DETAIL_LOADER = 1;
+    private static final int GET_TRAILER_LOADER = 2;
+    private static final int GET_CAST_LOADER = 3;
+    private static final int GET_REVIEW_LOADER = 4;
 
     // RecyclerView For Trailer
     private final String YOUTUBETRAILERSTART = "https://www.youtube.com/watch?v=";
@@ -140,32 +140,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             MakeDetailUrlSearchQuery();
             Organise_RecyclerView_And_LayoutManagers();
 
-        }
-    }
-
-
-    private void makeGetDetailSearchQuery() {
-        // Build the URL using the movieId
-        URL getDetailSearchUrl = NetworkUtils.buildGetDetailUrl(movieId);
-
-        // Loaders Take A Bundle So Insert The URL build above Into A Bundle
-        Bundle getDetailBundle = new Bundle();
-        getDetailBundle.putString(GET_DETAIL_SEARCH_URL, getDetailSearchUrl.toString());
-
-        Log.v(TAG, "MakeGetDetailUrlSearchQuery: " + getDetailSearchUrl);
-
-        // Call getSupportLoaderManager and store it in a LoaderManger variable
-        LoaderManager loaderManager = getSupportLoaderManager();
-
-        // Get our Loader by calling getLoader and passing the ID we specified for this loader
-        Loader<String> getDetailSearchLoader = loaderManager.getLoader(GET_DETAIL_LOADER);
-
-        // If the Loader was null, initialize it. Else restart it.
-        if (getDetailSearchLoader == null) {
-
-            loaderManager.initLoader(GET_DETAIL_LOADER, getDetailBundle, this);
-        } else {
-            loaderManager.restartLoader(GET_DETAIL_LOADER, getDetailBundle, this);
         }
     }
 
@@ -255,9 +229,11 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     }
 
+    private LoaderManager.LoaderCallbacks<String> getDetailLoader = new LoaderManager.LoaderCallbacks<String>() {
+
         @Override
-        public Loader<String> onCreateLoader ( int id, final Bundle args){
-            return new AsyncTaskLoader<String>(this) {
+        public Loader<String> onCreateLoader(int id, final Bundle args) {
+            return new AsyncTaskLoader<String>((Context) getDetailLoader) {
 
                 // This String will contain the raw JSON from the getDetails search
                 String mGetDetailJson;
@@ -310,67 +286,103 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             };
         }
 
-    @Override
-    public void onLoadFinished(Loader<String> loader, String data) {
-        if (data != null && !data.equals("")) {
-
-            /** PARSING JSON */
-            try {
-
-                // Parse The Raw Json Into The Views
-                Picasso.with(DetailActivity.this)
-                        .load(NetworkUtils.BASE_IMAGE_URL + new JSONObject(data).getString("poster_path"))
-                        .into(mMoviePosterIV);
-                mMovieTitleTV.setText(new JSONObject(data).getString("original_title"));
-                mMovieSynopsisTV.setText(new JSONObject(data).getString("overview"));
-                mMovieUserRatingTV.setText(new JSONObject(data).getString("vote_average"));
-                mMovieReleaseDateTV.setText(new JSONObject(data).getString("release_date"));
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-
-        }
-    }
-
-
-    @Override
-    public void onLoaderReset(Loader<String> loader) {
-
-    }
-
-
-    private class FetchTrailersAsyncTask extends AsyncTask<URL, Void, String> {
-
         @Override
-        protected String doInBackground(URL... params) {
-            URL searchUrl = params[0];
-            String movieTrailerResults = null;
+        public void onLoadFinished(Loader<String> loader, String data) {
+            if (data != null && !data.equals("")) {
 
+                /** PARSING JSON */
+                try {
 
-            try {
+                    // Parse The Raw Json Into The Views
+                    Picasso.with(DetailActivity.this)
+                            .load(NetworkUtils.BASE_IMAGE_URL + new JSONObject(data).getString("poster_path"))
+                            .into(mMoviePosterIV);
+                    mMovieTitleTV.setText(new JSONObject(data).getString("original_title"));
+                    mMovieSynopsisTV.setText(new JSONObject(data).getString("overview"));
+                    mMovieUserRatingTV.setText(new JSONObject(data).getString("vote_average"));
+                    mMovieReleaseDateTV.setText(new JSONObject(data).getString("release_date"));
 
-                movieTrailerResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
-            } catch (IOException e) {
-                e.printStackTrace();
 
             }
+        }
 
-            Log.v(TAG, "movieTrailerResults: " + movieTrailerResults);
 
-            return movieTrailerResults;
+        @Override
+        public void onLoaderReset(Loader<String> loader) {
+
+        }
+    };
+
+    private LoaderManager.LoaderCallbacks<String> getTrailerLoader = new LoaderManager.LoaderCallbacks<String>() {
+
+        @Override
+        public Loader<String> onCreateLoader(int id, final Bundle args) {
+            return new AsyncTaskLoader<String>((Context) getTrailerLoader) {
+
+                // This String will contain the raw JSON from the getDetails search
+                String mGetTrailerJson;
+
+                @Override
+                protected void onStartLoading() {
+                    super.onStartLoading();
+                    if (args == null) {
+                        return;
+                    }
+
+                    // When we begin loading in the background, display the loading indicator to
+                    // the user
+                    //mLoadingIndicator.setVisibility(View.VISIBLE);
+
+                    // If the raw Json is cached within the String mGetDetailJson, simply deliver that
+                    // json, avoid reloading the data. Else if it is not cached then reload the data
+                    if (mGetTrailerJson != null) {
+                        deliverResult(mGetTrailerJson);
+                    } else {
+                        forceLoad();
+                    }
+                }
+
+                @Override
+                public String loadInBackground() {
+
+                    // Extract the search query from the args using the constant
+                    String searchQueryUrlString = args.getString(GET_TRAILER_SEARCH_URL);
+
+                    try {
+
+                        URL getTrailerUrl = new URL(searchQueryUrlString);
+                        String movieTrailerResults = NetworkUtils.getResponseFromHttpUrl(getTrailerUrl);
+
+                        return movieTrailerResults;
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+
+                // Store the raw Json in the String mGetDetailJson
+                @Override
+                public void deliverResult(String getJson) {
+                    mGetTrailerJson = getJson;
+                    super.deliverResult(getJson);
+
+                }
+            };
         }
 
         @Override
-        protected void onPostExecute(String movieResults) {
-            if (movieResults != null && !movieResults.equals("")) {
+        public void onLoadFinished(Loader<String> loader, String data) {
+            if (data != null && !data.equals("")) {
 
                 /** PARSING JSON */
                 try {
                     // Define the entire feed as a JSONObject
-                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
+                    JSONObject theMovieDatabaseJsonObject = new JSONObject(data);
                     // Define the "results" JsonArray as a JSONArray
                     JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
                     // Now we need to get the individual Movie JsonObjects from the resultArray
@@ -399,7 +411,276 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
             }
         }
-    }
+
+        @Override
+        public void onLoaderReset(Loader<String> loader) {
+
+        }
+    };
+
+    private LoaderManager.LoaderCallbacks<String> getCastLoader = new LoaderManager.LoaderCallbacks<String>() {
+
+        @Override
+        public Loader<String> onCreateLoader(int id, final Bundle args) {
+            return new AsyncTaskLoader<String>((Context) getCastLoader) {
+
+                // This String will contain the raw JSON from the getDetails search
+                String mGetCastJson;
+
+                @Override
+                protected void onStartLoading() {
+                    super.onStartLoading();
+                    if (args == null) {
+                        return;
+                    }
+
+                    // When we begin loading in the background, display the loading indicator to
+                    // the user
+                    //mLoadingIndicator.setVisibility(View.VISIBLE);
+
+                    // If the raw Json is cached within the String mGetDetailJson, simply deliver that
+                    // json, avoid reloading the data. Else if it is not cached then reload the data
+                    if (mGetCastJson != null) {
+                        deliverResult(mGetCastJson);
+                    } else {
+                        forceLoad();
+                    }
+                }
+
+                @Override
+                public String loadInBackground() {
+
+                    // Extract the search query from the args using the constant
+                    String searchQueryUrlString = args.getString(GET_CAST_SEARCH_URL);
+
+                    try {
+
+                        URL getCastUrl = new URL(searchQueryUrlString);
+                        String movieCastResults = NetworkUtils.getResponseFromHttpUrl(getCastUrl);
+
+                        return movieCastResults;
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+
+                // Store the raw Json in the String mGetDetailJson
+                @Override
+                public void deliverResult(String getJson) {
+                    mGetCastJson = getJson;
+                    super.deliverResult(getJson);
+
+                }
+            };
+        }
+
+        @Override
+        public void onLoadFinished(Loader<String> loader, String data) {
+            if (data != null && !data.equals("")) {
+
+                /** PARSING JSON */
+                try {
+                    // Define the entire feed as a JSONObject
+                    JSONObject theMovieDatabaseJsonObject = new JSONObject(data);
+                    // Define the "results" JsonArray as a JSONArray
+                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("cast");
+                    // Now we need to get the individual Movie JsonObjects from the resultArray
+                    // using a for loop
+                    for (int i = 0; i < resultsArray.length(); i++) {
+
+                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
+
+                        CastMember castMember = new CastMember(
+                                movieJsonObject.getString("character"),
+                                movieJsonObject.getString("name"),
+                                movieJsonObject.getString("profile_path")
+                        );
+
+                        castMembers.add(castMember);
+
+                        Log.v(TAG, "CastMembers List: " + castMembers);
+                    }
+
+                    RecyclerView.Adapter castMemberAdapter = new CastMemberAdapter(castMembers, getApplicationContext());
+                    castMemberRecyclerView.setAdapter(castMemberAdapter);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<String> loader) {
+
+        }
+    };
+
+    private LoaderManager.LoaderCallbacks<String> getReviewLoader = new LoaderManager.LoaderCallbacks<String>() {
+
+        @Override
+        public Loader<String> onCreateLoader(int id, final Bundle args) {
+            return new AsyncTaskLoader<String>((Context) getReviewLoader) {
+
+                // This String will contain the raw JSON from the getDetails search
+                String mReviewJson;
+
+                @Override
+                protected void onStartLoading() {
+                    super.onStartLoading();
+                    if (args == null) {
+                        return;
+                    }
+
+                    // When we begin loading in the background, display the loading indicator to
+                    // the user
+                    //mLoadingIndicator.setVisibility(View.VISIBLE);
+
+                    // If the raw Json is cached within the String mGetDetailJson, simply deliver that
+                    // json, avoid reloading the data. Else if it is not cached then reload the data
+                    if (mReviewJson != null) {
+                        deliverResult(mReviewJson);
+                    } else {
+                        forceLoad();
+                    }
+                }
+
+                @Override
+                public String loadInBackground() {
+
+                    // Extract the search query from the args using the constant
+                    String searchQueryUrlString = args.getString(GET_REVIEW_SEARCH_URL);
+
+                    try {
+
+                        URL getReviewUrl = new URL(searchQueryUrlString);
+                        String movieReviewResults = NetworkUtils.getResponseFromHttpUrl(getReviewUrl);
+
+                        return movieReviewResults;
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+
+                // Store the raw Json in the String mGetDetailJson
+                @Override
+                public void deliverResult(String getJson) {
+                    mReviewJson = getJson;
+                    super.deliverResult(getJson);
+
+                }
+            };
+        }
+
+        @Override
+        public void onLoadFinished(Loader<String> loader, String data) {
+            if (data != null && !data.equals("")) {
+
+                /** PARSING JSON */
+                try {
+                    // Define the entire feed as a JSONObject
+                    JSONObject theMovieDatabaseJsonObject = new JSONObject(data);
+                    // Define the "results" JsonArray as a JSONArray
+                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
+                    // Now we need to get the individual Movie JsonObjects from the resultArray
+                    // using a for loop
+                    for (int i = 0; i < resultsArray.length(); i++) {
+
+                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
+
+                        Review review = new Review(
+                                movieJsonObject.getString("author"),
+                                movieJsonObject.getString("content")
+                        );
+
+                        reviews.add(review);
+
+                        Log.v(TAG, "Reviews List: " + reviews);
+                    }
+
+                    RecyclerView.Adapter reviewAdapter = new ReviewAdapter(reviews, getApplicationContext());
+                    reviewRecyclerView.setAdapter(reviewAdapter);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<String> loader) {
+
+        }
+    };
+
+
+//    private class FetchTrailersAsyncTask extends AsyncTask<URL, Void, String> {
+//
+//        @Override
+//        protected String doInBackground(URL... params) {
+//            URL searchUrl = params[0];
+//            String movieTrailerResults = null;
+//
+//
+//            try {
+//
+//                movieTrailerResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//
+//            }
+//
+//            Log.v(TAG, "movieTrailerResults: " + movieTrailerResults);
+//
+//            return movieTrailerResults;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String movieResults) {
+//            if (movieResults != null && !movieResults.equals("")) {
+//
+//                /** PARSING JSON */
+//                try {
+//                    // Define the entire feed as a JSONObject
+//                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
+//                    // Define the "results" JsonArray as a JSONArray
+//                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
+//                    // Now we need to get the individual Movie JsonObjects from the resultArray
+//                    // using a for loop
+//                    for (int i = 0; i < resultsArray.length(); i++) {
+//
+//                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
+//
+//                        Trailer trailer = new Trailer(
+//                                movieJsonObject.getString("name"),
+//                                movieJsonObject.getString("key")
+//                        );
+//
+//                        trailers.add(trailer);
+//
+//                        Log.v(TAG, "Trailers List: " + trailers);
+//                    }
+//
+//                    trailerAdapter = new TrailerAdapter(trailers, getApplicationContext(), DetailActivity.this);
+//                    trailerRecyclerView.setAdapter(trailerAdapter);
+//
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//        }
+//    }
 
     private class FetchCastMembersAsyncTask extends AsyncTask<URL, Void, String> {
 
@@ -460,65 +741,65 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             }
         }
     }
-
-    private class FetchReviewsAsyncTask extends AsyncTask<URL, Void, String> {
-
-        @Override
-        protected String doInBackground(URL... params) {
-            URL searchUrl = params[0];
-            String movieReviewResults = null;
-
-
-            try {
-
-                movieReviewResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            }
-            Log.v(TAG, "Review: " + movieReviewResults);
-            return movieReviewResults;
-
-        }
-
-        @Override
-        protected void onPostExecute(String movieResults) {
-            if (movieResults != null && !movieResults.equals("")) {
-
-                /** PARSING JSON */
-                try {
-                    // Define the entire feed as a JSONObject
-                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
-                    // Define the "results" JsonArray as a JSONArray
-                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
-                    // Now we need to get the individual Movie JsonObjects from the resultArray
-                    // using a for loop
-                    for (int i = 0; i < resultsArray.length(); i++) {
-
-                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
-
-                        Review review = new Review(
-                                movieJsonObject.getString("author"),
-                                movieJsonObject.getString("content")
-                        );
-
-                        reviews.add(review);
-
-                        Log.v(TAG, "Reviews List: " + reviews);
-                    }
-
-                    RecyclerView.Adapter reviewAdapter = new ReviewAdapter(reviews, getApplicationContext());
-                    reviewRecyclerView.setAdapter(reviewAdapter);
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-    }
+//
+//    private class FetchReviewsAsyncTask extends AsyncTask<URL, Void, String> {
+//
+//        @Override
+//        protected String doInBackground(URL... params) {
+//            URL searchUrl = params[0];
+//            String movieReviewResults = null;
+//
+//
+//            try {
+//
+//                movieReviewResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//
+//            }
+//            Log.v(TAG, "Review: " + movieReviewResults);
+//            return movieReviewResults;
+//
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String movieResults) {
+//            if (movieResults != null && !movieResults.equals("")) {
+//
+//                /** PARSING JSON */
+//                try {
+//                    // Define the entire feed as a JSONObject
+//                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
+//                    // Define the "results" JsonArray as a JSONArray
+//                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
+//                    // Now we need to get the individual Movie JsonObjects from the resultArray
+//                    // using a for loop
+//                    for (int i = 0; i < resultsArray.length(); i++) {
+//
+//                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
+//
+//                        Review review = new Review(
+//                                movieJsonObject.getString("author"),
+//                                movieJsonObject.getString("content")
+//                        );
+//
+//                        reviews.add(review);
+//
+//                        Log.v(TAG, "Reviews List: " + reviews);
+//                    }
+//
+//                    RecyclerView.Adapter reviewAdapter = new ReviewAdapter(reviews, getApplicationContext());
+//                    reviewRecyclerView.setAdapter(reviewAdapter);
+//
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//        }
+//    }
 
 //    private class FetchGetDetailAsyncTask extends AsyncTask<URL, Void, String> {
 //
@@ -615,6 +896,32 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     }
 
+    // Here we create the GetDetailSearchQuery and Initiate the Loader
+    private void makeGetDetailSearchQuery() {
+        // Build the URL using the movieId
+        URL getDetailSearchUrl = NetworkUtils.buildGetDetailUrl(movieId);
+
+        // Loaders Take A Bundle So Insert The URL build above Into A Bundle
+        Bundle getDetailBundle = new Bundle();
+        getDetailBundle.putString(GET_DETAIL_SEARCH_URL, getDetailSearchUrl.toString());
+
+        Log.v(TAG, "MakeGetDetailUrlSearchQuery: " + getDetailSearchUrl);
+
+        // Call getSupportLoaderManager and store it in a LoaderManger variable
+        LoaderManager loaderManagerGetDetail = getSupportLoaderManager();
+
+        // Get our Loader by calling getLoader and passing the ID we specified for this loader
+        Loader<String> getDetailSearchLoader = loaderManagerGetDetail.getLoader(GET_DETAIL_LOADER);
+
+        // If the Loader was null, initialize it. Else restart it.
+        if (getDetailSearchLoader == null) {
+
+            loaderManagerGetDetail.initLoader(GET_DETAIL_LOADER, getDetailBundle, getDetailLoader);
+        } else {
+            loaderManagerGetDetail.restartLoader(GET_DETAIL_LOADER, getDetailBundle, getDetailLoader);
+        }
+    }
+
     /**
      * This Method Has Two Parts:
      * 1. It instructs the NetworkUtils to build the URLs for the Trailers, Cast Members & Reviews APIs
@@ -622,20 +929,51 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
      */
     private void MakeDetailUrlSearchQuery() {
 
-        // Tells NetworkUtils to "buildDetailUrl" then saves it as a URL variable
-        URL trailerSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_TRAILERS);
-        URL castMembersSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_CREDITS);
-        URL reviewsSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_REVIEWS);
+//        // Tells NetworkUtils to "buildDetailUrl" then saves it as a URL variable
+//        URL trailerSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_TRAILERS);
+//        URL castMembersSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_CREDITS);
+//        URL reviewsSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_REVIEWS);
 
-        // We now pass that URL variable to the AsyncTask to create a connection and give us the feed
-        new FetchTrailersAsyncTask().execute(trailerSearchUrl);
-        new FetchCastMembersAsyncTask().execute(castMembersSearchUrl);
-        new FetchReviewsAsyncTask().execute(reviewsSearchUrl);
+        // Loaders Take A Bundle So Insert The URL build above Into A Bundle
+        Bundle getTrailerBundle = new Bundle();
+        Bundle getCastBundle = new Bundle();
+        Bundle getReviewBundle = new Bundle();
+        getTrailerBundle.putString(GET_TRAILER_SEARCH_URL, getTrailerBundle.toString());
+        getCastBundle.putString(GET_CAST_SEARCH_URL, getCastBundle.toString());
+        getReviewBundle.putString(GET_REVIEW_SEARCH_URL, getReviewBundle.toString());
 
-        Log.v(TAG, "MakeDetailUrlSearchQuery: " + trailerSearchUrl);
-        Log.v(TAG, "MakeDetailUrlSearchQuery: " + castMembersSearchUrl);
-        Log.v(TAG, "MakeDetailUrlSearchQuery: " + reviewsSearchUrl);
+        // Call getSupportLoaderManager and store it in a LoaderManger variable
+        LoaderManager loaderManagerTrailer = getSupportLoaderManager();
+        LoaderManager loaderManagerCast = getSupportLoaderManager();
+        LoaderManager loaderManagerReview = getSupportLoaderManager();
 
+        // Get our Loader by calling getLoader and passing the ID we specified for this loader
+        Loader<String> getTrailerSearchLoader = loaderManagerTrailer.getLoader(GET_TRAILER_LOADER);
+        Loader<String> getCastSearchLoader = loaderManagerCast.getLoader(GET_CAST_LOADER);
+        Loader<String> getReviewSearchLoader = loaderManagerReview.getLoader(GET_REVIEW_LOADER);
+
+        // We now pass the Bundle to the Loader to create a connection and give us the feed
+        // If the Loader was null, initialize it. Else restart it.
+        if (getTrailerSearchLoader == null){
+
+            loaderManagerTrailer.initLoader(GET_TRAILER_LOADER, getTrailerBundle, getTrailerLoader);
+        } else {
+            loaderManagerTrailer.restartLoader(GET_TRAILER_LOADER, getTrailerBundle, getTrailerLoader);
+        }
+
+        if (getCastSearchLoader == null){
+
+            loaderManagerCast.initLoader(GET_CAST_LOADER, getTrailerBundle, getCastLoader);
+        } else {
+            loaderManagerCast.restartLoader(GET_CAST_LOADER, getTrailerBundle, getCastLoader);
+        }
+
+        if (getReviewSearchLoader == null){
+
+            loaderManagerReview.initLoader(GET_REVIEW_LOADER, getReviewBundle, getReviewLoader);
+        } else {
+            loaderManagerReview.restartLoader(GET_REVIEW_LOADER, getReviewBundle, getReviewLoader);
+        }
 
     }
 
