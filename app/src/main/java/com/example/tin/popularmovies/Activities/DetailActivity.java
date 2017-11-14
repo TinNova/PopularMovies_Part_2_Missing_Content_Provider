@@ -110,18 +110,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
         mScrollView = (ScrollView) findViewById(R.id.detail_activity_scroll);
 
-
-        if (savedInstanceState != null) {
-
-        final int[] position = savedInstanceState.getIntArray("ARTICLE_SCROLL_POSITION");
-        if(position != null)
-            mScrollView.post(new Runnable() {
-                public void run() {
-                    mScrollView.scrollTo(position[0], position[1]);
-                }
-            });
-        }
-
         Intent intentThatStartedThisActivity = getIntent();
 
         //If DetailActivity was triggered by the popular or top_rated list (aka MainActivity)
@@ -168,6 +156,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         }
 
     }
+
 
     /**
      * Menu button

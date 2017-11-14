@@ -342,10 +342,31 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 //COMPLETED J. App crashed on rotation on Favourites List
 //COMPLETED K. When on top_rated on rotation it loads the popular list
 //TODO L. Hardcode dimensions
-//TODO M. Add a collapsing toolbar to the detail activity
+//TODO M. Add a Collapsing ToolbarLayout to the activity_detail.xml (use the backdrop_path image from the json feed)
 //TODO N. LogCat Error keeps saying "E/RecyclerView: No adapter attached; skipping layout"
 //TODO O. Use Parceble in the Model Lists to pass the data
 //TODO P. Use a Bundle in the intents to pass data
 //TODO Q. Save the scroll position in the DetailActivity
 //TODO R. Combine MovieActivity & FavouriteMoviesActivity (consider Fragment or another method)
 //TODO S. On MainActivity Landscape mode, use a 4 column grid instead of 2
+//TODO T. Hard code all of the dimensions
+
+// REVIEWER SUGGESTIONS
+//TODO R1 activity_detail.xml Instead of LinearLayout use ConstrainLayout.
+// WHY: It is more time consuming to build a layout with LinearLayout and it takes more processing power if the layout is very complex
+// Resources:
+//           Android: https://developer.android.com/training/constraint-layout/index.html
+//TODO R2 Use The Library ButterKnife which makes view initialisation easier by eliminating "findViewById()" - http://jakewharton.github.io/butterknife/
+//TODO R3 Instead of Toast you can try a SnakeBar & SnakeBar w/Action - https://developer.android.com/training/snackbar/action.html
+//TODO R4 FavouriteDbHelper Dropping a table is not good practise instead it should save the data then update the table
+// Resrouces:
+//           https://thebhwgroup.com/blog/how-android-sqlite-onupgrade
+//           http://zetcode.com/db/sqlite/tables/
+//TODO R5 Use RetroFit For The Network Calls - https://square.github.io/retrofit/
+//TODO R6 CastMemberAdapter in onBindViewHolder add ".error" to the Picasso code, so that if an image is not
+//          available from the JSON it can place a default image instead of an empty space!
+// Example: Picasso.with(context)
+//              .load(url)
+//              .placeholder(R.drawable.user_placeholder)
+//              .error(R.drawable.user_placeholder_error)
+//              .into(imageView);
