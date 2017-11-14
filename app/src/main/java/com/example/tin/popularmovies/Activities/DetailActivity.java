@@ -1,12 +1,10 @@
 package com.example.tin.popularmovies.Activities;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -19,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,14 +42,21 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_CREDITS;
+import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_REVIEWS;
+import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_TRAILERS;
+
 public class DetailActivity extends AppCompatActivity implements TrailerAdapter.TrailerListItemClickListener {
 
     // TAG to help catch errors in Log
     private static final String TAG = DetailActivity.class.getSimpleName();
 
+    private static final String LIST_STATE_KEY = "list_state_key";
+    ScrollView mScrollView;
+
     private static final String GET_DETAIL_SEARCH_URL = "get_detail_search_url";
     private static final String GET_TRAILER_SEARCH_URL = "get_trailer_search_url";
-    private static final String GET_CAST_SEARCH_URL = "get_case_search_url";
+    private static final String GET_CAST_SEARCH_URL = "get_cast_search_url";
     private static final String GET_REVIEW_SEARCH_URL = "get_review_search_url";
 
     private static final int GET_DETAIL_LOADER = 1;
@@ -74,6 +80,11 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
     private TextView mMovieUserRatingTV;
     private TextView mMovieReleaseDateTV;
 
+    //LayoutManagers
+    LinearLayoutManager trailerLinearLayoutManager;
+    LinearLayoutManager castMemberLinearLayoutManager;
+    LinearLayoutManager reviewLinearLayoutManager;
+
     //private String mMovieId;
     private String movieId;
     private String movieTitle;
@@ -96,6 +107,20 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         mMovieSynopsisTV = (TextView) findViewById(R.id.movie_synopsis);
         mMovieUserRatingTV = (TextView) findViewById(R.id.movie_rating);
         mMovieReleaseDateTV = (TextView) findViewById(R.id.movie_release_date);
+
+        mScrollView = (ScrollView) findViewById(R.id.detail_activity_scroll);
+
+
+        if (savedInstanceState != null) {
+
+        final int[] position = savedInstanceState.getIntArray("ARTICLE_SCROLL_POSITION");
+        if(position != null)
+            mScrollView.post(new Runnable() {
+                public void run() {
+                    mScrollView.scrollTo(position[0], position[1]);
+                }
+            });
+        }
 
         Intent intentThatStartedThisActivity = getIntent();
 
@@ -141,8 +166,8 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             Organise_RecyclerView_And_LayoutManagers();
 
         }
-    }
 
+    }
 
     /**
      * Menu button
@@ -233,7 +258,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
         @Override
         public Loader<String> onCreateLoader(int id, final Bundle args) {
-            return new AsyncTaskLoader<String>((Context) getDetailLoader) {
+            return new AsyncTaskLoader<String>(getApplicationContext()) {
 
                 // This String will contain the raw JSON from the getDetails search
                 String mGetDetailJson;
@@ -321,7 +346,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
         @Override
         public Loader<String> onCreateLoader(int id, final Bundle args) {
-            return new AsyncTaskLoader<String>((Context) getTrailerLoader) {
+            return new AsyncTaskLoader<String>(getApplicationContext()) {
 
                 // This String will contain the raw JSON from the getDetails search
                 String mGetTrailerJson;
@@ -422,7 +447,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
         @Override
         public Loader<String> onCreateLoader(int id, final Bundle args) {
-            return new AsyncTaskLoader<String>((Context) getCastLoader) {
+            return new AsyncTaskLoader<String>(getApplicationContext()) {
 
                 // This String will contain the raw JSON from the getDetails search
                 String mGetCastJson;
@@ -524,7 +549,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
         @Override
         public Loader<String> onCreateLoader(int id, final Bundle args) {
-            return new AsyncTaskLoader<String>((Context) getReviewLoader) {
+            return new AsyncTaskLoader<String>(getApplicationContext()) {
 
                 // This String will contain the raw JSON from the getDetails search
                 String mReviewJson;
@@ -621,233 +646,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         }
     };
 
-
-//    private class FetchTrailersAsyncTask extends AsyncTask<URL, Void, String> {
-//
-//        @Override
-//        protected String doInBackground(URL... params) {
-//            URL searchUrl = params[0];
-//            String movieTrailerResults = null;
-//
-//
-//            try {
-//
-//                movieTrailerResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//
-//            }
-//
-//            Log.v(TAG, "movieTrailerResults: " + movieTrailerResults);
-//
-//            return movieTrailerResults;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String movieResults) {
-//            if (movieResults != null && !movieResults.equals("")) {
-//
-//                /** PARSING JSON */
-//                try {
-//                    // Define the entire feed as a JSONObject
-//                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
-//                    // Define the "results" JsonArray as a JSONArray
-//                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
-//                    // Now we need to get the individual Movie JsonObjects from the resultArray
-//                    // using a for loop
-//                    for (int i = 0; i < resultsArray.length(); i++) {
-//
-//                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
-//
-//                        Trailer trailer = new Trailer(
-//                                movieJsonObject.getString("name"),
-//                                movieJsonObject.getString("key")
-//                        );
-//
-//                        trailers.add(trailer);
-//
-//                        Log.v(TAG, "Trailers List: " + trailers);
-//                    }
-//
-//                    trailerAdapter = new TrailerAdapter(trailers, getApplicationContext(), DetailActivity.this);
-//                    trailerRecyclerView.setAdapter(trailerAdapter);
-//
-//
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//
-//            }
-//        }
-//    }
-
-    private class FetchCastMembersAsyncTask extends AsyncTask<URL, Void, String> {
-
-        @Override
-        protected String doInBackground(URL... params) {
-            URL searchUrl = params[0];
-            String movieCastResults = null;
-
-
-            try {
-
-                movieCastResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            }
-            Log.v(TAG, "CastMember: " + movieCastResults);
-            return movieCastResults;
-
-        }
-
-        @Override
-        protected void onPostExecute(String movieResults) {
-            if (movieResults != null && !movieResults.equals("")) {
-
-                /** PARSING JSON */
-                try {
-                    // Define the entire feed as a JSONObject
-                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
-                    // Define the "results" JsonArray as a JSONArray
-                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("cast");
-                    // Now we need to get the individual Movie JsonObjects from the resultArray
-                    // using a for loop
-                    for (int i = 0; i < resultsArray.length(); i++) {
-
-                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
-
-                        CastMember castMember = new CastMember(
-                                movieJsonObject.getString("character"),
-                                movieJsonObject.getString("name"),
-                                movieJsonObject.getString("profile_path")
-                        );
-
-                        castMembers.add(castMember);
-
-                        Log.v(TAG, "CastMembers List: " + castMembers);
-                    }
-
-                    RecyclerView.Adapter castMemberAdapter = new CastMemberAdapter(castMembers, getApplicationContext());
-                    castMemberRecyclerView.setAdapter(castMemberAdapter);
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-    }
-//
-//    private class FetchReviewsAsyncTask extends AsyncTask<URL, Void, String> {
-//
-//        @Override
-//        protected String doInBackground(URL... params) {
-//            URL searchUrl = params[0];
-//            String movieReviewResults = null;
-//
-//
-//            try {
-//
-//                movieReviewResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//
-//            }
-//            Log.v(TAG, "Review: " + movieReviewResults);
-//            return movieReviewResults;
-//
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String movieResults) {
-//            if (movieResults != null && !movieResults.equals("")) {
-//
-//                /** PARSING JSON */
-//                try {
-//                    // Define the entire feed as a JSONObject
-//                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
-//                    // Define the "results" JsonArray as a JSONArray
-//                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
-//                    // Now we need to get the individual Movie JsonObjects from the resultArray
-//                    // using a for loop
-//                    for (int i = 0; i < resultsArray.length(); i++) {
-//
-//                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
-//
-//                        Review review = new Review(
-//                                movieJsonObject.getString("author"),
-//                                movieJsonObject.getString("content")
-//                        );
-//
-//                        reviews.add(review);
-//
-//                        Log.v(TAG, "Reviews List: " + reviews);
-//                    }
-//
-//                    RecyclerView.Adapter reviewAdapter = new ReviewAdapter(reviews, getApplicationContext());
-//                    reviewRecyclerView.setAdapter(reviewAdapter);
-//
-//
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//
-//            }
-//        }
-//    }
-
-//    private class FetchGetDetailAsyncTask extends AsyncTask<URL, Void, String> {
-//
-//        @Override
-//        protected String doInBackground(URL... params) {
-//            URL searchUrl = params[0];
-//            String movieDetailResults = null;
-//
-//
-//            try {
-//
-//                movieDetailResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//
-//            }
-//            Log.v(TAG, "GetDetail: " + movieDetailResults);
-//            return movieDetailResults;
-//
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String movieDetailResults) {
-//            if (movieDetailResults != null && !movieDetailResults.equals("")) {
-//
-//                /** PARSING JSON */
-//                try {
-//
-//                    // Parse The Raw Json Into The Views
-//                    Picasso.with(DetailActivity.this)
-//                            .load(NetworkUtils.BASE_IMAGE_URL + new JSONObject(movieDetailResults).getString("poster_path"))
-//                            .into(mMoviePosterIV);
-//                    mMovieTitleTV.setText(new JSONObject(movieDetailResults).getString("original_title"));
-//                    mMovieSynopsisTV.setText(new JSONObject(movieDetailResults).getString("overview"));
-//                    mMovieUserRatingTV.setText(new JSONObject(movieDetailResults).getString("vote_average"));
-//                    mMovieReleaseDateTV.setText(new JSONObject(movieDetailResults).getString("release_date"));
-//
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//
-//
-//            }
-//        }
-//    }
-
-
     /**
      * Code Which Add A Film To The SQL Database
      */
@@ -929,18 +727,18 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
      */
     private void MakeDetailUrlSearchQuery() {
 
-//        // Tells NetworkUtils to "buildDetailUrl" then saves it as a URL variable
-//        URL trailerSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_TRAILERS);
-//        URL castMembersSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_CREDITS);
-//        URL reviewsSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_REVIEWS);
+        // Tells NetworkUtils to "buildDetailUrl" then saves it as a URL variable
+        URL trailerSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_TRAILERS);
+        URL castMembersSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_CREDITS);
+        URL reviewsSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_REVIEWS);
 
         // Loaders Take A Bundle So Insert The URL build above Into A Bundle
         Bundle getTrailerBundle = new Bundle();
         Bundle getCastBundle = new Bundle();
         Bundle getReviewBundle = new Bundle();
-        getTrailerBundle.putString(GET_TRAILER_SEARCH_URL, getTrailerBundle.toString());
-        getCastBundle.putString(GET_CAST_SEARCH_URL, getCastBundle.toString());
-        getReviewBundle.putString(GET_REVIEW_SEARCH_URL, getReviewBundle.toString());
+        getTrailerBundle.putString(GET_TRAILER_SEARCH_URL, trailerSearchUrl.toString());
+        getCastBundle.putString(GET_CAST_SEARCH_URL, castMembersSearchUrl.toString());
+        getReviewBundle.putString(GET_REVIEW_SEARCH_URL, reviewsSearchUrl.toString());
 
         // Call getSupportLoaderManager and store it in a LoaderManger variable
         LoaderManager loaderManagerTrailer = getSupportLoaderManager();
@@ -963,9 +761,9 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
         if (getCastSearchLoader == null){
 
-            loaderManagerCast.initLoader(GET_CAST_LOADER, getTrailerBundle, getCastLoader);
+            loaderManagerCast.initLoader(GET_CAST_LOADER, getCastBundle, getCastLoader);
         } else {
-            loaderManagerCast.restartLoader(GET_CAST_LOADER, getTrailerBundle, getCastLoader);
+            loaderManagerCast.restartLoader(GET_CAST_LOADER, getCastBundle, getCastLoader);
         }
 
         if (getReviewSearchLoader == null){
@@ -997,9 +795,9 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             * RecyclerView as well as determining the policy for when to recycle item views that
             * are no longer visible to the user.
             */
-        LinearLayoutManager trailerLinearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        LinearLayoutManager castMemberLinearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        LinearLayoutManager reviewLinearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        trailerLinearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        castMemberLinearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        reviewLinearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
 
         // Set the mRecyclerView to the layoutManager so it can handle the positioning of the items
@@ -1013,6 +811,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         reviews = new ArrayList<>();
 
     }
+
 
     /**
      * This Method Deletes a Movie form the Database
@@ -1096,92 +895,3 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
     }
 
 }
-
-/**
- * TODOS Step 1 - Adding Favourites - COMPLETED
- * <p>
- * TODOS Step 2 - Adding Content Provider
- * <p>
- * TODOs Step 3 - LifeCycles & Background Tasks
- * <p>
- * EXTRA TODOS TO MAKE THE APP BETTER
- * <p>
- * TODOS Step 2 - Adding Content Provider
- * <p>
- * TODOs Step 3 - LifeCycles & Background Tasks
- * <p>
- * EXTRA TODOS TO MAKE THE APP BETTER
- * <p>
- * TODOS Step 2 - Adding Content Provider
- * <p>
- * TODOs Step 3 - LifeCycles & Background Tasks
- * <p>
- * EXTRA TODOS TO MAKE THE APP BETTER
- * <p>
- * TODOS Step 2 - Adding Content Provider
- * <p>
- * TODOs Step 3 - LifeCycles & Background Tasks
- * <p>
- * EXTRA TODOS TO MAKE THE APP BETTER
- * <p>
- * TODOS Step 2 - Adding Content Provider
- * <p>
- * TODOs Step 3 - LifeCycles & Background Tasks
- * <p>
- * EXTRA TODOS TO MAKE THE APP BETTER
- * <p>
- * TODOS Step 2 - Adding Content Provider
- * <p>
- * TODOs Step 3 - LifeCycles & Background Tasks
- * <p>
- * EXTRA TODOS TO MAKE THE APP BETTER
- * <p>
- * TODOS Step 2 - Adding Content Provider
- * <p>
- * TODOs Step 3 - LifeCycles & Background Tasks
- * <p>
- * EXTRA TODOS TO MAKE THE APP BETTER
- */
-//TODO 1 (DONE) Create A Star Button That Launches A Toast (But In The Future It Will Save The Film In The SQL & The Favourites Section Of The App)
-//TODO 2 (DONE) Design The SQL Table & Create An SQL Contract
-//TODO 3 (DONE) The DetailActivity Needs To Have The Ability To Add A Movie To The DataBase When Clicking On The Heart Icon
-//TODO 4 (DONE) Test That It Works In The Logs (Google How To View Contents Of The SQL In Log, Or Find Another Quick Way)
-//TODO 5 (DONE) In MainActivity Build A RecyclerView, Adapter & FavouriteMovie Class To View The Favourite Movies DataBase In A GridView (We Have The Image Poster In The Database, That's All We Need For The GridView)
-//TODO 6 (DONE) Create A Button To Switch To The FavouriteMoviesActivity GridView, By Making The Current GridView "setVisibility(View.GONE)" And The FavouriteMoviesActivity GridView As Visible
-//TODO 7 (DONE) The FavouriteMovie SQL Needs To Contain The MOVIE_ID
-//TODO 8a(DONE) Now When A Movie Is Clicked On From The FavouriteMovie GridView It Needs To Launch An Intent To The Detail Activity
-//TODO 8b(DONE) TEMPORARILY WITH ItemTouchHelper) Now Pass Through The MOVIE_ID So We Can Create A "Get Details" Call In "TODO 10"
-//TODO 9 (DONE) Within The DetailActivity OnCreate Method We Need An If Statement To Check:
-// - if the activityThatLaunchedIt contains a MovieTitle it is from the Movie GridView
-// - else if the activityThatLaunchedIt contains a MOVIE_ID it is from the FavouriteMovie GridView
-// - TODO (DONE) For Full Instructions On The "else if" See TODO 10 Further Up The Code In The OnCreate Method
-//TODO 10 (DONE) Launch an AsyncTask on the "Get Details" JSON Feed using the MOVIE_ID, parse it, and display the data in the TextViews & ImageViews
-//TODO 11 (DONE) Test That It All Works. We Should Be Able To Add A Movie To Favourites From The DetailActivity Launched By The Movie GridView, We Should Be Able To View The Favourite Movie In A RecyclerView In A Grid Layout & Click Through To See The Movie In The Detail Activity
-//TODO 12 (DONE) Now Let's Focus On How To Remove A Movie From The Database!
-//  - When viewing DetailActivity from FavouriteMoviesActivity the heart should be white, clicking it should remove the film from the database
-
-/**
- * TODOS Step 2 - Adding Content Provider
- */
-
-/**
- * TODOs Step 3 - LifeCycles & Background Tasks
- */
-
-/**
- * EXTRA TODOS TO MAKE THE APP BETTER
- */
-//COMPLETED A. Prevent the same film being added twice to SQL.
-//COMPLETED B. DONE Be able to see if Movie is favourite even when checking it from either the MainActivity or the Favourite Activity
-//TODO C. Fix the back navigation, If in SQL Detail Activity Mode and go Back you land on MainActivity instead of FavouriteMovie Activity
-//TODO D. Switch from FavouriteMovieActivity to Fragment Instead??
-//COMPLETED E. When Movie Is Deleted Ensure The FavouriteMovieActivity Refreshes Using The BroadCast Receiver??
-//COMPLETED F. When a new film is marked as favourite it auto return to the MainActivity, instead it should stay on the detail activity page
-//TODO G. When deleting the last film from the SQL, the last film remains in the list instead of being deleted
-//TODO H. Add a Collapsing Toolbar to DetailActivity
-//TODO I. Make app fullscreen (remove the blue default header)
-//TODO J. App crashed on rotation on Favourites List
-//TODO K. When on top_rated on rotation it loads the popular list
-//TODO L. Hardcode dimensions
-//TODO M. Add a collapsing toolbar to the detail activity
-//TODO N. LogCat Error keeps saying "E/RecyclerView: No adapter attached; skipping layout"
