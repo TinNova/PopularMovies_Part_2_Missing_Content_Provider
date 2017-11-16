@@ -370,3 +370,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 //              .placeholder(R.drawable.user_placeholder)
 //              .error(R.drawable.user_placeholder_error)
 //              .into(imageView);
+
+// TODOs FOR LEARNING PURPOSES
+//TODO Try include a Service in the app: Part 1 Lesson 10
+//TODO Try include Notifications in the app: Part 1 Lesson 10
+//TODO Try include BroadCast Receivers in the app: Part 1 Lesson 10
