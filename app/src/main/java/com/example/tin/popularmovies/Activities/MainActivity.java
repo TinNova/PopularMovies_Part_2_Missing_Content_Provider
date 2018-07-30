@@ -3,7 +3,6 @@ package com.example.tin.popularmovies.Activities;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
-import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -35,7 +34,7 @@ import java.util.List;
 import static com.example.tin.popularmovies.NetworkUtils.POPULAR_PATH;
 import static com.example.tin.popularmovies.NetworkUtils.TOP_RATED_PATH;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener {
+public class MainActivity extends AppCompatActivity implements MainContract.MainScreen, MovieAdapter.ListItemClickListener {
 
     // TAG to help catch errors in Log
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -57,10 +56,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
     private int filterType = 0;
     private int menuId;
 
+    private MainPresenter mainPresenter;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mainPresenter = new MainPresenter(this);
 
         noWifiIcon = (ImageView) findViewById(R.id.no_internet_icon);
         noWifiText = (TextView) findViewById(R.id.no_internet_txt);

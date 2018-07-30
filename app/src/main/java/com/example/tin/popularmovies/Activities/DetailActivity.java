@@ -46,7 +46,7 @@ import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_CREDITS;
 import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_REVIEWS;
 import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_TRAILERS;
 
-public class DetailActivity extends AppCompatActivity implements TrailerAdapter.TrailerListItemClickListener {
+public class DetailActivity extends AppCompatActivity implements DetailContract.DetailScreen, TrailerAdapter.TrailerListItemClickListener {
 
     // TAG to help catch errors in Log
     private static final String TAG = DetailActivity.class.getSimpleName();
@@ -96,11 +96,16 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
     // Determines If A Movie Is Favourite Or Not, 0 = Not Favourite, 1 = Favourite
     private int favourite_NotFavourite;
 
+    private DetailPresenter detailPresenter;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
+        detailPresenter = new DetailPresenter(this);
 
         mMoviePosterIV = (ImageView) findViewById(R.id.movie_image);
         mMovieTitleTV = (TextView) findViewById(R.id.movie_title);

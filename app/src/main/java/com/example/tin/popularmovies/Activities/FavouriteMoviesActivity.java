@@ -2,7 +2,6 @@ package com.example.tin.popularmovies.Activities;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.os.PersistableBundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -20,7 +19,7 @@ import com.example.tin.popularmovies.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FavouriteMoviesActivity extends AppCompatActivity implements FavouritesAdapter.ListItemClickListener,
+public class FavouriteMoviesActivity extends AppCompatActivity implements FavContract.FavScreen, FavouritesAdapter.ListItemClickListener,
         LoaderManager.LoaderCallbacks<Cursor> {
 
     Cursor mFavouriteMoviesData;
@@ -35,10 +34,14 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements Favour
     private RecyclerView favouriteRecyclerView;
     private List<FavouriteMovie> favouriteMovies;
 
+    private FavPresenter favPresenter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favourite_movies);
+
+        favPresenter = new FavPresenter(this);
 
         favouriteRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_favourite);
 
