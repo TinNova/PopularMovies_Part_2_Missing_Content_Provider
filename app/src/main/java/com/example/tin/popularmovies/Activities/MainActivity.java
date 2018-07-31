@@ -2,6 +2,7 @@ package com.example.tin.popularmovies.Activities;
 
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
     // Key Strings For Save Instance State
     private static final String MENU_ITEM_SELECTED = "menu_item_selected";
     private static final String FILTER_TYPE = "filter_type";
+
+    private static final String ON_CREATE = "on_create";
 
 
     private RecyclerView mRecyclerView;
@@ -95,48 +98,8 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
             filterType = savedInstanceState.getInt(FILTER_TYPE);
         }
 
-
-        // Check if connected to internet, if false show an error
-        // if true start the AsyncTask to fetch the Movie data
-        if (!isOnline()) {
-
-
-            noWifiIcon.setVisibility(View.VISIBLE);
-            noWifiText.setVisibility(View.VISIBLE);
-            retryWifiButton.setVisibility(View.VISIBLE);
-
-            Toast.makeText(this, "There Is No Internet Connection", Toast.LENGTH_SHORT).show();
-
-            retryWifiButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                    if (!isOnline()) {
-
-                        Toast.makeText(MainActivity.this, "Please Try Again", Toast.LENGTH_SHORT).show();
-
-                    } else {
-
-                        MakeMovieDatabaseSearchQuery();
-
-                        noWifiIcon.setVisibility(View.GONE);
-                        noWifiText.setVisibility(View.GONE);
-                        retryWifiButton.setVisibility(View.GONE);
-
-                    }
-
-                }
-            });
-
-        } else {
-
-            MakeMovieDatabaseSearchQuery();
-
-            noWifiIcon.setVisibility(View.GONE);
-            noWifiText.setVisibility(View.GONE);
-            retryWifiButton.setVisibility(View.GONE);
-
-        }
+        /* Checking for internet connection */
+        mainPresenter.isOnline(this);
 
     }
 
@@ -254,6 +217,36 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
     }
 
+    @Override
+    public void showNoConnection() {
+
+        if (!(noWifiIcon.getVisibility() == View.VISIBLE)) {
+
+            noWifiIcon.setVisibility(View.VISIBLE);
+            noWifiText.setVisibility(View.VISIBLE);
+            retryWifiButton.setVisibility(View.VISIBLE);
+
+            retryWifiButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    mainPresenter.isOnline(getBaseContext());
+                }
+            });
+        }
+            Toast.makeText(getBaseContext(), "There Is No Internet Connection", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void hideNoConnection() {
+
+        MakeMovieDatabaseSearchQuery();
+
+        noWifiIcon.setVisibility(View.GONE);
+        noWifiText.setVisibility(View.GONE);
+        retryWifiButton.setVisibility(View.GONE);
+    }
+
 
     private class FetchMoviesAsyncTask extends AsyncTask<URL, Void, String> {
 
@@ -317,18 +310,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
             }
         }
     }
-
-
-    /** Helper Code that checks if device is connected to the internet */
-    private boolean isOnline() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-
-        return cm.getActiveNetworkInfo() != null &&
-                cm.getActiveNetworkInfo().isConnectedOrConnecting();
-
-    }
-
 }
 
 /**
