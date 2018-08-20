@@ -1,5 +1,6 @@
 package com.example.tin.popularmovies.Activities;
 
+import android.arch.persistence.room.Room;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -30,6 +31,9 @@ import com.example.tin.popularmovies.Models.Review;
 import com.example.tin.popularmovies.Models.Trailer;
 import com.example.tin.popularmovies.NetworkUtils;
 import com.example.tin.popularmovies.R;
+import com.example.tin.popularmovies.room.AppDatabase;
+import com.example.tin.popularmovies.room.FavouriteMovieRoom;
+import com.example.tin.popularmovies.room.FavouriteMovieRoomDAO;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -41,6 +45,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_CREDITS;
 import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_REVIEWS;
@@ -98,6 +103,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
 
     private DetailPresenter detailPresenter;
 
+    private FavouriteMovieRoomDAO mFavouriteMovieRoomDAO;
 
 
     @Override
@@ -116,6 +122,12 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         mScrollView = (ScrollView) findViewById(R.id.detail_activity_scroll);
 
         Intent intentThatStartedThisActivity = getIntent();
+
+        mFavouriteMovieRoomDAO = Room.databaseBuilder(this, AppDatabase.class, "db-contacts")
+                .allowMainThreadQueries()   //Allows room to do operation on main thread
+                .build()
+                .getFavouriteMovieRoomDAO();
+
 
         //If DetailActivity was triggered by the popular or top_rated list (aka MainActivity)
         if (intentThatStartedThisActivity.hasExtra("MovieId")) {
@@ -142,11 +154,10 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
             Organise_RecyclerView_And_LayoutManagers();
 
             //Else if DetailActivity was triggered by the FavouriteMoviesActivity
-        } else if (intentThatStartedThisActivity.hasExtra("Row_Id")) {
+        } else if (intentThatStartedThisActivity.hasExtra("Favourite_Movie")) {
 
-            // The Heart Icon Is Fully White Indicating It Is Favourite
+            // The Heart Icon Is Fully While Indicating It Is Favourite
             favourite_NotFavourite = 1;
-
 
             // In getLongExtra the second value is the default value that will be used if the Long can't be found
             row_id = intentThatStartedThisActivity.getLongExtra("Row_Id", -1);
@@ -163,6 +174,8 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
     }
 
 
+    String isFilmFavourite = null;
+
     /**
      * Menu button
      */
@@ -173,8 +186,21 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         getMenuInflater().inflate(R.menu.menu_detail, menu);
         favouriteMenu = menu.findItem(R.id.favourite);
 
+        try {
+            isFilmFavourite = mFavouriteMovieRoomDAO.getMovieWithId(movieId).getMovieId();
+            Log.d(TAG, "onCreateOptionsMenu: " + isFilmFavourite);
+
+        } catch (NullPointerException e) {
+
+            Log.d(TAG, "NullPointerException: " + e);
+
+
+        }
+
+//        Log.d(TAG, "onCreateOptionsMenu: " + testMovieId);
         // Assign Correct Heart Icon: If 0 = Not Favourite, so add the white border icon
-        if (favourite_NotFavourite == 0) {
+        if (isFilmFavourite == null) {
+//        if (favourite_NotFavourite == 0) {
             favouriteMenu.setIcon(R.drawable.ic_favorite_border_white_24dp);
             // else if 1 = Favourite, so add the full white icon
         } else {
@@ -194,8 +220,12 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         switch (item.getItemId()) {
 
             case R.id.favourite:
+
                 // If the movie is NOT in the favourite database, add it to favourites
-                if (isMovieFavourite() == null) {
+//                if (isMovieFavourite() == null){
+                if (isFilmFavourite == null) {
+//                if (favourite_NotFavourite == 0){
+//                if (mFavouriteMovieRoomDAO.getMovieWithId(movieId).getMovieId() != movieId) {
 
                     // Change the Heart Icon from white outline to white heart
                     favouriteMenu.setIcon(R.drawable.ic_favorite_white_24dp);
@@ -646,22 +676,30 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
     // Code that adds a new movie into the Favourite Movies Sql
     private void addNewMovie(String movieIdSql, String movieTitleSql, byte[] moviePosterByteArraySql) {
 
-        // ContentValues passes the values onto the SQLite insert query
-        ContentValues cv = new ContentValues();
+        Log.d(TAG, "addNewMovie: " + movieIdSql + " " + movieTitleSql + " " + moviePosterByteArraySql);
+        FavouriteMovieRoom favouriteMovieRoom = new FavouriteMovieRoom();
+        favouriteMovieRoom.setMovieId(movieIdSql);
+        favouriteMovieRoom.setMovieName(movieTitleSql);
+        favouriteMovieRoom.setMoviePoster(moviePosterByteArraySql);
 
-        // We don't need to include the ID of the row, because BaseColumns in the Contract Class does this
-        // for us. If we didn't have the BaseColumns we would have to add the ID ourselves.
-        cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID, movieIdSql);
-        cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_NAME, movieTitleSql);
-        cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_POSTER, moviePosterByteArraySql);
+        mFavouriteMovieRoomDAO.insert(favouriteMovieRoom);
 
-        // Insert the new movie to the Favourite SQLite Db via a ContentResolver
-        Uri uri = getContentResolver().insert(FavouritesContract.FavouritesEntry.CONTENT_URI, cv);
-
-        // Display the URI that's returned with a Toast
-        if (uri != null) {
-            Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_SHORT).show();
-        }
+//        // ContentValues passes the values onto the SQLite insert query
+//        ContentValues cv = new ContentValues();
+//
+//        // We don't need to include the ID of the row, because BaseColumns in the Contract Class does this
+//        // for us. If we didn't have the BaseColumns we would have to add the ID ourselves.
+//        cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID, movieIdSql);
+//        cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_NAME, movieTitleSql);
+//        cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_POSTER, moviePosterByteArraySql);
+//
+//        // Insert the new movie to the Favourite SQLite Db via a ContentResolver
+//        Uri uri = getContentResolver().insert(FavouritesContract.FavouritesEntry.CONTENT_URI, cv);
+//
+//        // Display the URI that's returned with a Toast
+//        if (uri != null) {
+//            Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_SHORT).show();
+//        }
 
         // Here we return the mDb.insert Method, and specify the Table Name, and the ContentValues object
         // This will return a new row in the table with the values specified in the cv
@@ -746,21 +784,21 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
 
         // We now pass the Bundle to the Loader to create a connection and give us the feed
         // If the Loader was null, initialize it. Else restart it.
-        if (getTrailerSearchLoader == null){
+        if (getTrailerSearchLoader == null) {
 
             loaderManagerTrailer.initLoader(GET_TRAILER_LOADER, getTrailerBundle, getTrailerLoader);
         } else {
             loaderManagerTrailer.restartLoader(GET_TRAILER_LOADER, getTrailerBundle, getTrailerLoader);
         }
 
-        if (getCastSearchLoader == null){
+        if (getCastSearchLoader == null) {
 
             loaderManagerCast.initLoader(GET_CAST_LOADER, getCastBundle, getCastLoader);
         } else {
             loaderManagerCast.restartLoader(GET_CAST_LOADER, getCastBundle, getCastLoader);
         }
 
-        if (getReviewSearchLoader == null){
+        if (getReviewSearchLoader == null) {
 
             loaderManagerReview.initLoader(GET_REVIEW_LOADER, getReviewBundle, getReviewLoader);
         } else {
@@ -814,13 +852,16 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
      */
     private void removeMovie(long id) {
 
+        FavouriteMovieRoom favRoom = mFavouriteMovieRoomDAO.getMovieWithId(movieId);
+        mFavouriteMovieRoomDAO.delete(favRoom);
+
         // Here we are building up the uri using the row_id in order to tell the ContentResolver
         // to delete the item
-        String stringRowId = Long.toString(id);
-        Uri uri = FavouritesContract.FavouritesEntry.CONTENT_URI;
-        uri = uri.buildUpon().appendPath(stringRowId).build();
-
-        getContentResolver().delete(uri, null, null);
+//        String stringRowId = Long.toString(id);
+//        Uri uri = FavouritesContract.FavouritesEntry.CONTENT_URI;
+//        uri = uri.buildUpon().appendPath(stringRowId).build();
+//
+//        getContentResolver().delete(uri, null, null);
 
     }
 

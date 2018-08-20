@@ -1,4 +1,4 @@
-package com.example.tin.popularmovies;
+package com.example.tin.popularmovies.room;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
@@ -16,7 +16,8 @@ public class FavouriteMovieRoom {
     private String movieId;
     @NonNull
     private String movieName;
-//    private blob moviePoster;
+    @NonNull
+    private byte[] moviePoster;
 
 
     @NonNull
@@ -35,5 +36,14 @@ public class FavouriteMovieRoom {
 
     public void setMovieName(@NonNull String movieName) {
         this.movieName = movieName;
+    }
+
+    @NonNull
+    public byte[] getMoviePoster() {
+        return moviePoster;
+    }
+
+    public void setMoviePoster(@NonNull byte[] moviePoster) {
+        this.moviePoster = moviePoster;
     }
 }

@@ -11,13 +11,14 @@ import android.widget.ImageView;
 
 import com.example.tin.popularmovies.Models.FavouriteMovie;
 import com.example.tin.popularmovies.R;
+import com.example.tin.popularmovies.room.FavouriteMovieRoom;
 
 import java.util.List;
 
 
 public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.ViewHolder>{
 
-    private final List<FavouriteMovie> favouriteMovies;
+    private final List<FavouriteMovieRoom> mFavouriteMovies;
     private final Context context;
     //private Cursor mCursor;
 
@@ -28,10 +29,10 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.Vi
 
     }
 
-    public FavouritesAdapter(List<FavouriteMovie> favouriteMovies, Context context, ListItemClickListener mOnClickListener) {
+    public FavouritesAdapter(List<FavouriteMovieRoom> favouriteMovies, Context context, ListItemClickListener mOnClickListener) {
 
         //this.mCursor = cursor;
-        this.favouriteMovies = favouriteMovies;
+        this.mFavouriteMovies = favouriteMovies;
         this.context = context;
         this.mOnClickListener = mOnClickListener;
     }
@@ -50,10 +51,10 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.Vi
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
 
-        FavouriteMovie favouriteMovie = favouriteMovies.get(position);
+        FavouriteMovieRoom favouriteMovie = mFavouriteMovies.get(position);
 
         //
-        byte[] moviePosterSql = favouriteMovie.getMoviePosterSql();
+        byte[] moviePosterSql = favouriteMovie.getMoviePoster();
         // Here we convert the Movie Poster from a byte[] into a Bitmap
         Bitmap bitmapMoviePosterSql = BitmapFactory.decodeByteArray(moviePosterSql, 0, moviePosterSql.length);
         // Here we attach the converted Movie Poster to the ImageView
@@ -62,15 +63,18 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.Vi
 
     }
 
-
     @Override
     public int getItemCount() {
 
-        return favouriteMovies.size();
+        return mFavouriteMovies.size();
     }
 
+    public void addItems(List<FavouriteMovieRoom> favouriteMovies) {
 
-
+        this.mFavouriteMovies.clear();
+        this.mFavouriteMovies.addAll(favouriteMovies);
+        notifyDataSetChanged();
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 

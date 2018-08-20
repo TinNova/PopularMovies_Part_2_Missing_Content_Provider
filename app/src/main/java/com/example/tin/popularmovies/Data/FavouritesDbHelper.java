@@ -11,7 +11,7 @@ public class FavouritesDbHelper extends SQLiteOpenHelper {
 
     // The name of the database as it will be saved on the user Android Device
     private static final String DATABASE_NAME = "favouriteMovies.db";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
 
     // Constructor that takes a context and calls the parent constructor
     public FavouritesDbHelper (Context context) {
