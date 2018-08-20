@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PopularMovies_Part_2-onClickViaSwipe_And_Sql_db_is_in_List_And_Not_Working.iml" filepath="$PROJECT_DIR$/PopularMovies_Part_2-onClickViaSwipe_And_Sql_db_is_in_List_And_Not_Working.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/PopularMovies_Part_2_Ready_To_Submit_Room.iml" filepath="$PROJECT_DIR$/.idea/PopularMovies_Part_2_Ready_To_Submit_Room.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
