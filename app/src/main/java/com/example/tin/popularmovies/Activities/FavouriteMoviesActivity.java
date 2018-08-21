@@ -1,20 +1,13 @@
 package com.example.tin.popularmovies.Activities;
 
-import android.annotation.SuppressLint;
 import android.arch.persistence.room.Room;
 import android.content.Intent;
-import android.database.Cursor;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 
 import com.example.tin.popularmovies.Adapters.FavouritesAdapter;
-import com.example.tin.popularmovies.Data.FavouritesContract;
 import com.example.tin.popularmovies.room.AppDatabase;
 import com.example.tin.popularmovies.room.FavouriteMovieRoom;
 import com.example.tin.popularmovies.room.FavouriteMovieRoomDAO;
@@ -24,9 +17,7 @@ import com.example.tin.popularmovies.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FavouriteMoviesActivity extends AppCompatActivity implements FavContract.FavScreen, FavouritesAdapter.ListItemClickListener
-//        , LoaderManager.LoaderCallbacks<Cursor>
-{
+public class FavouriteMoviesActivity extends AppCompatActivity implements FavContract.FavScreen, FavouritesAdapter.ListItemClickListener {
 
     List<FavouriteMovieRoom> mFavouriteMoviesRooms;
 
@@ -73,17 +64,6 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements FavCon
 
         favouriteRecyclerView.setAdapter(favouritesAdapter);
 
-
-//        if (savedInstanceState != null) {
-//            getSupportLoaderManager().restartLoader(savedInstanceState.getInt(ROTATION_TAG), null, this);
-//        }
-//
-//        /*
-//         Ensure a loader is initialized and active. If the loader doesn't already exist, one is
-//         created, otherwise the last created loader is re-used.
-//         */
-//        getSupportLoaderManager().initLoader(FAVOURITEMOVIES_LOADER_ID, null, this);
-
     }
 
     public void queryAllData(){
@@ -99,14 +79,6 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements FavCon
 
         queryAllData();
 
-//        // first we clear the favouriteMovies List, otherwise it will present another list on top
-//        // of the previously loaded list.
-//        // TODO HOWEVER, do we want to reload the list every time? I think we only want to do that if we know there
-//        // was an update to the SQLite database, otherwise it's not necessary because nothing would've
-//        // changed...????
-//        favouriteMovies.clear();
-//        // re-queries for all of the favouriteMovies
-//        getSupportLoaderManager().restartLoader(FAVOURITEMOVIES_LOADER_ID, null, this);
     }
 
     @Override
@@ -124,10 +96,6 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements FavCon
 
         Intent intent = new Intent(this, DetailActivity.class);
 
-//        intent.putExtra("Row_Id", favouriteMovies.get(clickedItemIndex).getRow_id());
-//        intent.putExtra("MovieSqlId", favouriteMovies.get(clickedItemIndex).getMovieSqlId());
-//        intent.putExtra("MoviePosterSql", favouriteMovies.get(clickedItemIndex).getMoviePosterSql());
-
         intent.putExtra("Favourite_Movie", true);
         intent.putExtra("MovieSqlId", mFavouriteMoviesRooms.get(clickedItemIndex).getMovieId());
         intent.putExtra("MoviePosterSql", mFavouriteMoviesRooms.get(clickedItemIndex).getMoviePoster());
@@ -135,118 +103,4 @@ public class FavouriteMoviesActivity extends AppCompatActivity implements FavCon
         startActivity(intent);
 
     }
-
-//    /**
-//     * Instantiates and returns a new AsyncTaskLoader with the given ID.
-//     * This loader will return favouriteMovie data as a Cursor or null if an error occurs.
-//     * <p>
-//     * Implements the required callbacks to take care of loading data at all stages of loading.
-//     */
-//    @SuppressLint("StaticFieldLeak")
-//    @Override
-//    public List<FavouriteMovieRoom> onCreateLoader(int id, Bundle args) {
-//
-//        return new AsyncTaskLoader<Void>(this) {
-//
-//            mFavouriteMoviesRoom = null;
-//
-//            @Override
-//            protected void onStartLoading() {
-//                if (mFavouriteMoviesRoom != null) {
-//                    // Delivers any previously loaded data immediately
-//                    deliverResult(mFavouriteMoviesRoom);
-//                } else {
-//                    // Force a new load
-//                    forceLoad();
-//                }
-//            }
-//
-//            // loadInBackground() performs asynchronous loading of data
-//            @Override
-//            public Void loadInBackground() {
-//
-////                try {
-//                mFavouriteMovieRoomDAO.getFavouriteMovieRooms();
-//
-////                    return getContentResolver().query(
-////                            FavouritesContract.FavouritesEntry.CONTENT_URI,
-////                            null,
-////                            null,
-////                            null,
-////                            FavouritesContract.FavouritesEntry._ID
-////                    );
-//
-////                } catch (Exception e) {
-////                    Log.e(TAG, "Failed to asynchronously load data.");
-////                    e.printStackTrace();
-////                    return null;
-////                }
-//                return null;
-//            }
-//
-//            // deliverResult sends the result of the load, a Cursor, to the registered listener
-//            public void deliverResult(List<FavouriteMovieRoom> data) {
-//                mFavouriteMoviesData = data;
-//                super.deliverResult(data);
-//            }
-//        };
-//    }
-//
-//    /**
-//     * Called when a previously created loader has finished its load.
-//     *
-//     * @param loader The Loader that has finished.
-//     * @param data   The data generated by the Loader.
-//     */
-//    @Override
-//    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-//
-//        /** Here We Are Accessing The SQLite Query We Received In The Method getAllMovies() Which Is Set To Read All Rows
-//         * We're Going Through Each Row With A For Loop And Putting Them Into Our FavouriteMovie Model
-//         *
-//         * @param cursor
-//         */
-//
-//        if (data != null && data.getCount() > 0) {
-//            data.moveToFirst();
-//            for (int count = 0; count < data.getCount(); count++) {
-//
-//                FavouriteMovie favouriteMovie = new FavouriteMovie(
-//
-//                        data.getLong(data.getColumnIndex(FavouritesContract.FavouritesEntry._ID)),
-//                        data.getString(data.getColumnIndex(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID)),
-//                        data.getBlob(data.getColumnIndex(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_POSTER))
-//
-//                );
-//
-//                Log.v(TAG, "Row_Id" + data.getLong(data.getColumnIndex(FavouritesContract.FavouritesEntry._ID)));
-//
-//                favouriteMovies.add(favouriteMovie);
-//
-//                Log.v(TAG, "DATA LOADED BY onLoadFinished: " + favouriteMovies);
-//
-//                data.moveToNext();
-//            }
-//
-//            FavouritesAdapter favouritesAdapter = new FavouritesAdapter(favouriteMovies, getApplicationContext(), FavouriteMoviesActivity.this);
-//            favouriteRecyclerView.setAdapter(favouritesAdapter);
-//
-//        } else {
-//            Log.v(TAG, "cursor is Empty");
-//        }
-//
-//        assert data != null;
-//        data.close();
-//    }
-
-//    /**
-//     * Called when a previously created loader is being reset, and thus
-//     * making its data unavailable.
-//     * onLoaderReset removes any references this activity had to the loader's data.
-//     *
-//     * @param loader The Loader that is being reset.
-//     */
-//    @Override
-//    public void onLoaderReset(Loader<Cursor> loader) {
-//    }
 }

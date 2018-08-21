@@ -25,7 +25,6 @@ import android.widget.Toast;
 import com.example.tin.popularmovies.Adapters.CastMemberAdapter;
 import com.example.tin.popularmovies.Adapters.ReviewAdapter;
 import com.example.tin.popularmovies.Adapters.TrailerAdapter;
-import com.example.tin.popularmovies.Data.FavouritesContract;
 import com.example.tin.popularmovies.Models.CastMember;
 import com.example.tin.popularmovies.Models.Review;
 import com.example.tin.popularmovies.Models.Trailer;
@@ -45,7 +44,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_CREDITS;
 import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_REVIEWS;
@@ -139,11 +137,6 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
             String movieReleaseDate = intentThatStartedThisActivity.getStringExtra("MovieReleaseDate");
             movieId = intentThatStartedThisActivity.getStringExtra("MovieId");
 
-            /** Check If The Movie Is Saved As A Favourite Movie In The Database */
-            // If it is in the database, we mark it as favourite in the Heart Icon else, it is marked as not favourite
-            // This is important to prevent the same movie being added to the database twice.
-            isMovieFavouriteFull();
-
             Picasso.with(this).load(moviePoster).into(mMoviePosterIV);
             mMovieTitleTV.setText(movieTitle);
             mMovieSynopsisTV.setText(movieSynopsis);
@@ -222,10 +215,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
             case R.id.favourite:
 
                 // If the movie is NOT in the favourite database, add it to favourites
-//                if (isMovieFavourite() == null){
                 if (isFilmFavourite == null) {
-//                if (favourite_NotFavourite == 0){
-//                if (mFavouriteMovieRoomDAO.getMovieWithId(movieId).getMovieId() != movieId) {
 
                     // Change the Heart Icon from white outline to white heart
                     favouriteMenu.setIcon(R.drawable.ic_favorite_white_24dp);
@@ -684,29 +674,6 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
 
         mFavouriteMovieRoomDAO.insert(favouriteMovieRoom);
 
-//        // ContentValues passes the values onto the SQLite insert query
-//        ContentValues cv = new ContentValues();
-//
-//        // We don't need to include the ID of the row, because BaseColumns in the Contract Class does this
-//        // for us. If we didn't have the BaseColumns we would have to add the ID ourselves.
-//        cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID, movieIdSql);
-//        cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_NAME, movieTitleSql);
-//        cv.put(FavouritesContract.FavouritesEntry.COLUMN_MOVIE_POSTER, moviePosterByteArraySql);
-//
-//        // Insert the new movie to the Favourite SQLite Db via a ContentResolver
-//        Uri uri = getContentResolver().insert(FavouritesContract.FavouritesEntry.CONTENT_URI, cv);
-//
-//        // Display the URI that's returned with a Toast
-//        if (uri != null) {
-//            Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_SHORT).show();
-//        }
-
-        // Here we return the mDb.insert Method, and specify the Table Name, and the ContentValues object
-        // This will return a new row in the table with the values specified in the cv
-        // Note: We didn't insert the Row ID, that's because we specified in the SQL onCreate statement
-        //       That the row _ID will autoincrement
-        //return mDb.insert(FavouritesContract.FavouritesEntry.TABLE_NAME, null, cv);
-
     }
 
 
@@ -855,78 +822,5 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         FavouriteMovieRoom favRoom = mFavouriteMovieRoomDAO.getMovieWithId(movieId);
         mFavouriteMovieRoomDAO.delete(favRoom);
 
-        // Here we are building up the uri using the row_id in order to tell the ContentResolver
-        // to delete the item
-//        String stringRowId = Long.toString(id);
-//        Uri uri = FavouritesContract.FavouritesEntry.CONTENT_URI;
-//        uri = uri.buildUpon().appendPath(stringRowId).build();
-//
-//        getContentResolver().delete(uri, null, null);
-
     }
-
-    private Cursor isMovieFavourite() {
-
-        // If it is in the database, we mark it as favourite in the Heart Icon else, it is marked as not favourite
-        // This is important to prevent the same movie being added to the database twice.
-
-        // Single Item Query: Checking if the movieId is inside the database
-        Cursor cursor = getContentResolver().query(
-                FavouritesContract.FavouritesEntry.CONTENT_URI,
-                null,
-                FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID + "=?",
-                new String[]{movieId},
-                FavouritesContract.FavouritesEntry.COLUMN_MOVIE_ID
-        );
-
-        // If the movieId is in the database
-        if (cursor.getCount() != 0) {
-
-            return cursor;
-
-        } else {
-
-            return null;
-
-        }
-    }
-
-    /**
-     * Check If The Movie Is Saved As A Favourite Movie In The Database
-     */
-    private void isMovieFavouriteFull() {
-
-        Cursor cursor = isMovieFavourite();
-
-        Log.v(TAG, "Cursor = " + cursor);
-
-        // If the movieId is in the database
-        if (cursor != null) {
-
-            try {
-                cursor.moveToFirst();
-                // Assign the _ID to the long variable row_id, this allows the user to delete the Movie from the database
-                row_id = cursor.getLong(cursor.getColumnIndex(FavouritesContract.FavouritesEntry._ID));
-
-                // The Heart Icon Is Full White Indicating It's Favourite
-                favourite_NotFavourite = 1;
-
-            } catch (Exception e) {
-                Log.v(TAG, "Couldn't Recognise Cursor: " + cursor);
-            }
-            // try finally will guarantee the cursor is closed
-            finally {
-                cursor.close();
-            }
-
-            Log.v(TAG, "ROW_ID: " + row_id);
-
-            // Else, the movie isn't in the database
-        } else {
-            // The Heart Icon Is A White Border Indicating Not Favourite
-            favourite_NotFavourite = 0;
-        }
-
-    }
-
 }

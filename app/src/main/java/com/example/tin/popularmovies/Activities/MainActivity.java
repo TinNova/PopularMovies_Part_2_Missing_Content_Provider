@@ -1,8 +1,6 @@
 package com.example.tin.popularmovies.Activities;
 
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
