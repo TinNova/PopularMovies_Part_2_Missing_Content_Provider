@@ -3,6 +3,12 @@ package com.example.tin.popularmovies.Activities;
 import android.content.Context;
 
 import com.example.tin.popularmovies.ConnectionUtils;
+import com.example.tin.popularmovies.NetworkUtils;
+
+import java.net.URL;
+
+import static com.example.tin.popularmovies.NetworkUtils.POPULAR_PATH;
+import static com.example.tin.popularmovies.NetworkUtils.TOP_RATED_PATH;
 
 
 public class MainPresenter implements MainContract.MainPresenter {

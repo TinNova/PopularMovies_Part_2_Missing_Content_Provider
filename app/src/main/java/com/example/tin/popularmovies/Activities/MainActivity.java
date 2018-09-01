@@ -35,19 +35,15 @@ import static com.example.tin.popularmovies.NetworkUtils.TOP_RATED_PATH;
 
 public class MainActivity extends AppCompatActivity implements MainContract.MainScreen, MovieAdapter.ListItemClickListener {
 
-    // TAG to help catch errors in Log
     private static final String TAG = MainActivity.class.getSimpleName();
     // Key Strings For Save Instance State
     private static final String MENU_ITEM_SELECTED = "menu_item_selected";
     private static final String FILTER_TYPE = "filter_type";
 
-    private static final String ON_CREATE = "on_create";
-
-
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter adapter;
 
-    private List<Movie> movies;
+    private List<Movie> mMovies;
 
     private ImageView noWifiIcon;
     private TextView noWifiText;
@@ -55,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
     // How to filter the view, 0 = Popular Films, 1 = Top Rated Films
     private int filterType = 0;
+    private boolean popularFilms = true;
     private int menuId;
 
     private MainPresenter mainPresenter;
@@ -67,28 +64,24 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
         mainPresenter = new MainPresenter(this);
 
+        setupViews(savedInstanceState);
+
+    }
+
+
+    private void setupViews(Bundle savedInstanceState) {
+
         noWifiIcon = (ImageView) findViewById(R.id.no_internet_icon);
         noWifiText = (TextView) findViewById(R.id.no_internet_txt);
         retryWifiButton = (Button) findViewById(R.id.retry_internet_connection);
 
-        // This will be used to attach the RecyclerView to the MovieAdapter
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movie);
-        // This will improve performance by stating that changes in the content will not change
-        // the child layout size in the RecyclerView
         mRecyclerView.setHasFixedSize(true);
-
-        /*
-         * A LayoutManager is responsible for measuring and positioning item views within a
-         * RecyclerView as well as determining the policy for when to recycle item views that
-         * are no longer visible to the user.
-         */
         GridLayoutManager mGridLayoutManager =
                 new GridLayoutManager(this, 2);
-
-        // Set the mRecyclerView to the layoutManager so it can handle the positioning of the items
         mRecyclerView.setLayoutManager(mGridLayoutManager);
 
-        movies = new ArrayList<>();
+        mMovies = new ArrayList<>();
 
         if (savedInstanceState != null) {
             // Setting the values retrieved from onStateInstanceState
@@ -101,43 +94,25 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
     }
 
-    /**
-     * Menu button
-     */
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu options from the res/menu/menu_catalog.xml file.
-        // This adds menu items to the app bar.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Putting the integer values as filterType and menuId are both int based values
-        outState.putInt(MENU_ITEM_SELECTED, menuId);
-        outState.putInt(FILTER_TYPE, filterType);
-    }
-
-    /**
-     * Dropdown list of options when Menu button has been clicked
-     */
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // User clicked on a menu option in the app bar overflow menu
         switch (item.getItemId()) {
-            // Response to a click on the "View By Popularity" menu option
             case R.id.filter_by_popular:
 
-                // If the filterType is already 0 (aka Popular), then do nothing, else, clear the movies list
-                // so it's empty, then switch to Popular.
-                // This saves us having to create a new internet connection needlessly
-                if (filterType == 0) {
+                // If the popularFilms is true, then do nothing
+                if (popularFilms) {
                     return true;
                 } else {
-                    movies.clear();
-                    filterType = 0;
+                    mMovies.clear();
+                    popularFilms = true;
                     MakeMovieDatabaseSearchQuery();
                     return true;
                 }
@@ -145,14 +120,12 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
                 // Response to a click on the "View By Ratings" menu option
             case R.id.filter_by_rating:
 
-                // If the filter is already 1 (aka Top Rated), then do nothing, else, clear the movies list
-                // so it's empty, then switch to Top Rated.
-                // This saves us having to create a new internet connection needlessly
-                if (filterType == 1) {
+                // If the popularFilms is false, then do nothing
+                if (!popularFilms) {
                     return true;
                 } else {
-                    movies.clear();
-                    filterType = 1;
+                    mMovies.clear();
+                    popularFilms = false;
                     MakeMovieDatabaseSearchQuery();
                     return true;
                 }
@@ -174,26 +147,14 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
         // By default we filter by Popularity, therefore we pass in the POPULAR_PATH String, else
         // we pass in the TOP_RATED_PATH String
-        if (filterType == 0) {
+        if (popularFilms) {
 
-            // Reset the previously pulled data
-            //mFeedResultTextView.setText(null);
-
-            // Tell NetworkUtils to "buildMovieUrl" then saves it as a URL variable
             URL movieDatabaseSearchUrl = NetworkUtils.buildMovieUrl(POPULAR_PATH);
-
-            // We now pass that URL variable to the AsyncTask to create a connection and give us the feed
             new FetchMoviesAsyncTask().execute(movieDatabaseSearchUrl);
 
         } else {
 
-            // Reset the previously pulled data
-            //mFeedResultTextView.setText(null);
-
-            // Tell NetworkUtils to "buildMovieUrl" then saves it as a URL variable
             URL movieDatabaseSearchUrl = NetworkUtils.buildMovieUrl(TOP_RATED_PATH);
-
-            // We now pass that URL variable to the AsyncTask to create a connection and give us the feed
             new FetchMoviesAsyncTask().execute(movieDatabaseSearchUrl);
 
         }
@@ -204,12 +165,12 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
         Intent intent = new Intent(this, DetailActivity.class);
 
-        intent.putExtra("MoviePoster", movies.get(clickedItemIndex).getPosterImageUrl());
-        intent.putExtra("MovieTitle", movies.get(clickedItemIndex).getMovieTitle());
-        intent.putExtra("MovieSynopsis", movies.get(clickedItemIndex).getMovieSynopsis());
-        intent.putExtra("MovieUserRating", movies.get(clickedItemIndex).getMovieUserRating());
-        intent.putExtra("MovieReleaseDate", movies.get(clickedItemIndex).getMovieReleaseDate());
-        intent.putExtra("MovieId", movies.get(clickedItemIndex).getMovieId());
+        intent.putExtra("MoviePoster", mMovies.get(clickedItemIndex).getPosterImageUrl());
+        intent.putExtra("MovieTitle", mMovies.get(clickedItemIndex).getMovieTitle());
+        intent.putExtra("MovieSynopsis", mMovies.get(clickedItemIndex).getMovieSynopsis());
+        intent.putExtra("MovieUserRating", mMovies.get(clickedItemIndex).getMovieUserRating());
+        intent.putExtra("MovieReleaseDate", mMovies.get(clickedItemIndex).getMovieReleaseDate());
+        intent.putExtra("MovieId", mMovies.get(clickedItemIndex).getMovieId());
 
         startActivity(intent);
 
@@ -232,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
                 }
             });
         }
-            Toast.makeText(getBaseContext(), "There Is No Internet Connection", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), "There Is No Internet Connection", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -292,13 +253,13 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
                                 movieJsonObject.getString("id")
                         );
 
-                        movies.add(movie);
+                        mMovies.add(movie);
 
                         Log.v(TAG, "Movies List: " + movie);
 
                     }
 
-                    adapter = new MovieAdapter(movies, getApplicationContext(), MainActivity.this);
+                    adapter = new MovieAdapter(mMovies, getApplicationContext(), MainActivity.this);
                     mRecyclerView.setAdapter(adapter);
 
 
@@ -307,6 +268,14 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
                 }
             }
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Putting the integer values as filterType and menuId are both int based values
+        outState.putInt(MENU_ITEM_SELECTED, menuId);
+        outState.putInt(FILTER_TYPE, filterType);
     }
 }
 
