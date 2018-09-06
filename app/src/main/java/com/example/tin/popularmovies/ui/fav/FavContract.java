@@ -1,4 +1,4 @@
-package com.example.tin.popularmovies.Activities;
+package com.example.tin.popularmovies.ui.fav;
 
 /**
  * Created by Tin on 30/07/2018.

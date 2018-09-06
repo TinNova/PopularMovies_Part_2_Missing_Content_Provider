@@ -9,6 +9,8 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import static com.example.tin.popularmovies.Constants.BASE_IMAGE_URL;
+
 public class MovieResult implements Parcelable {
 
     @SerializedName("vote_count")
@@ -49,7 +51,7 @@ public class MovieResult implements Parcelable {
     public boolean adult;
     @SerializedName("overview")
     @Expose
-    public String overview;
+    public String synopsis;
     @SerializedName("release_date")
     @Expose
     public String releaseDate;
@@ -84,7 +86,7 @@ public class MovieResult implements Parcelable {
                 ", genreIds=" + genreIds +
                 ", backdropPath='" + backdropPath + '\'' +
                 ", adult=" + adult +
-                ", overview='" + overview + '\'' +
+                ", overview='" + synopsis + '\'' +
                 ", releaseDate='" + releaseDate + '\'' +
                 '}';
     }
@@ -102,7 +104,7 @@ public class MovieResult implements Parcelable {
         in.readList(this.genreIds, (Integer.class.getClassLoader()));
         this.backdropPath = ((String) in.readValue((String.class.getClassLoader())));
         this.adult = ((boolean) in.readValue((boolean.class.getClassLoader())));
-        this.overview = ((String) in.readValue((String.class.getClassLoader())));
+        this.synopsis = ((String) in.readValue((String.class.getClassLoader())));
         this.releaseDate = ((String) in.readValue((String.class.getClassLoader())));
     }
 
@@ -122,7 +124,7 @@ public class MovieResult implements Parcelable {
         dest.writeList(genreIds);
         dest.writeValue(backdropPath);
         dest.writeValue(adult);
-        dest.writeValue(overview);
+        dest.writeValue(synopsis);
         dest.writeValue(releaseDate);
     }
 
@@ -130,4 +132,27 @@ public class MovieResult implements Parcelable {
         return 0;
     }
 
+    public String getPosterPath() {
+        return BASE_IMAGE_URL + posterPath;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getSynopsis() {
+        return synopsis;
+    }
+
+    public double getVoteAverage() {
+        return voteAverage;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate;
+    }
+
+    public int getId() {
+        return id;
+    }
 }

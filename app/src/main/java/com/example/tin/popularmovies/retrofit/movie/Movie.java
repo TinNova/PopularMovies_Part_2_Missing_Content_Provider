@@ -70,4 +70,7 @@ public class Movie implements Parcelable {
         return 0;
     }
 
+    public List<MovieResult> getResults() {
+        return results;
+    }
 }

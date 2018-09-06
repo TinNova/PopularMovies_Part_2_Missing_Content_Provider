@@ -1,9 +1,7 @@
-package com.example.tin.popularmovies.Activities;
+package com.example.tin.popularmovies.ui.detail;
 
 import android.arch.persistence.room.Room;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v4.app.LoaderManager;

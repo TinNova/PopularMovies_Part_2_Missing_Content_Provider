@@ -1,13 +1,11 @@
-package com.example.tin.popularmovies.Activities;
+package com.example.tin.popularmovies.ui.main;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,23 +15,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.tin.popularmovies.Adapters.MovieAdapter;
+import com.example.tin.popularmovies.ConnectionUtils;
 import com.example.tin.popularmovies.Models.Movie;
-import com.example.tin.popularmovies.NetworkUtils;
+import com.example.tin.popularmovies.MoviePositionListener;
 import com.example.tin.popularmovies.R;
+import com.example.tin.popularmovies.retrofit.movie.MovieResult;
+import com.example.tin.popularmovies.ui.detail.DetailActivity;
+import com.example.tin.popularmovies.ui.fav.FavouriteMoviesActivity;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.tin.popularmovies.NetworkUtils.POPULAR_PATH;
-import static com.example.tin.popularmovies.NetworkUtils.TOP_RATED_PATH;
-
-public class MainActivity extends AppCompatActivity implements MainContract.MainScreen, MovieAdapter.ListItemClickListener {
+public class MainActivity extends AppCompatActivity implements MainContract.MainScreen, MoviePositionListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     // Key Strings For Save Instance State
@@ -90,10 +83,9 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
         }
 
         /* Checking for internet connection */
-        mainPresenter.isOnline(this);
+        isOnline();
 
     }
-
 
 
     @Override
@@ -113,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
                 } else {
                     mMovies.clear();
                     popularFilms = true;
-                    MakeMovieDatabaseSearchQuery();
+                    mainPresenter.getMovies(popularFilms);
                     return true;
                 }
 
@@ -126,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
                 } else {
                     mMovies.clear();
                     popularFilms = false;
-                    MakeMovieDatabaseSearchQuery();
+                    mainPresenter.getMovies(popularFilms);
                     return true;
                 }
 
@@ -139,47 +131,30 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
         return super.onOptionsItemSelected(item);
     }
 
-    /* This tells the NetworkUtils Class to build the Url of the Movie Database Feed
-    * It then saves the URL as a URL variable called movieDatabaseSearchUrl
-    * It then tells the AsyncTask to start a network connection using the newly created URL
-    */
-    private void MakeMovieDatabaseSearchQuery() {
+    @Override
+    public void populateRecyclerView(ArrayList<MovieResult> movies) {
 
-        // By default we filter by Popularity, therefore we pass in the POPULAR_PATH String, else
-        // we pass in the TOP_RATED_PATH String
-        if (popularFilms) {
-
-            URL movieDatabaseSearchUrl = NetworkUtils.buildMovieUrl(POPULAR_PATH);
-            new FetchMoviesAsyncTask().execute(movieDatabaseSearchUrl);
-
-        } else {
-
-            URL movieDatabaseSearchUrl = NetworkUtils.buildMovieUrl(TOP_RATED_PATH);
-            new FetchMoviesAsyncTask().execute(movieDatabaseSearchUrl);
-
-        }
+        adapter = new MovieAdapter(movies, getApplicationContext(), MainActivity.this);
+        mRecyclerView.setAdapter(adapter);
     }
 
     @Override
-    public void onListItemClick(int clickedItemIndex) {
-
+    public void MovieItemClick(MovieResult movie) {
         Intent intent = new Intent(this, DetailActivity.class);
 
-        intent.putExtra("MoviePoster", mMovies.get(clickedItemIndex).getPosterImageUrl());
-        intent.putExtra("MovieTitle", mMovies.get(clickedItemIndex).getMovieTitle());
-        intent.putExtra("MovieSynopsis", mMovies.get(clickedItemIndex).getMovieSynopsis());
-        intent.putExtra("MovieUserRating", mMovies.get(clickedItemIndex).getMovieUserRating());
-        intent.putExtra("MovieReleaseDate", mMovies.get(clickedItemIndex).getMovieReleaseDate());
-        intent.putExtra("MovieId", mMovies.get(clickedItemIndex).getMovieId());
+        intent.putExtra("MoviePoster", movie.getPosterPath());
+        intent.putExtra("MovieTitle", movie.getTitle());
+        intent.putExtra("MovieSynopsis", movie.getSynopsis());
+        intent.putExtra("MovieUserRating", movie.getVoteAverage());
+        intent.putExtra("MovieReleaseDate", movie.getReleaseDate());
+        intent.putExtra("MovieId", movie.getId());
 
         startActivity(intent);
-
     }
 
-    @Override
-    public void showNoConnection() {
+    public void isOnline() {
 
-        if (!(noWifiIcon.getVisibility() == View.VISIBLE)) {
+        if (!ConnectionUtils.isOnline(this)) {
 
             noWifiIcon.setVisibility(View.VISIBLE);
             noWifiText.setVisibility(View.VISIBLE);
@@ -189,84 +164,18 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
                 @Override
                 public void onClick(View view) {
 
-                    mainPresenter.isOnline(getBaseContext());
+                    isOnline();
                 }
             });
-        }
-        Toast.makeText(getBaseContext(), "There Is No Internet Connection", Toast.LENGTH_SHORT).show();
-    }
 
-    @Override
-    public void hideNoConnection() {
+            Toast.makeText(getBaseContext(), "There Is No Internet Connection", Toast.LENGTH_SHORT).show();
+        } else {
 
-        MakeMovieDatabaseSearchQuery();
+            mainPresenter.getMovies(popularFilms);
 
-        noWifiIcon.setVisibility(View.GONE);
-        noWifiText.setVisibility(View.GONE);
-        retryWifiButton.setVisibility(View.GONE);
-    }
-
-
-    private class FetchMoviesAsyncTask extends AsyncTask<URL, Void, String> {
-
-
-        @Override
-        protected String doInBackground(URL... params) {
-            URL searchUrl = params[0];
-            String movieResults = null;
-
-            try {
-
-                movieResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            }
-
-            return movieResults;
-        }
-
-        @Override
-        protected void onPostExecute(String movieResults) {
-            if (movieResults != null && !movieResults.equals("")) {
-
-                /** PARSING JSON */
-
-                try {
-                    // Define the entire feed as a JSONObject
-                    JSONObject theMovieDatabaseJsonObject = new JSONObject(movieResults);
-                    // Define the "results" JsonArray as a JSONArray
-                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
-                    // Now we need to get the individual Movie JsonObjects from the resultArray
-                    // using a for loop
-                    for (int i = 0; i < resultsArray.length(); i++) {
-
-                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
-
-                        Movie movie = new Movie(
-                                movieJsonObject.getString("poster_path"),
-                                movieJsonObject.getString("title"),
-                                movieJsonObject.getString("overview"),
-                                movieJsonObject.getString("vote_average"),
-                                movieJsonObject.getString("release_date"),
-                                movieJsonObject.getString("id")
-                        );
-
-                        mMovies.add(movie);
-
-                        Log.v(TAG, "Movies List: " + movie);
-
-                    }
-
-                    adapter = new MovieAdapter(mMovies, getApplicationContext(), MainActivity.this);
-                    mRecyclerView.setAdapter(adapter);
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
+            noWifiIcon.setVisibility(View.GONE);
+            noWifiText.setVisibility(View.GONE);
+            retryWifiButton.setVisibility(View.GONE);
         }
     }
 

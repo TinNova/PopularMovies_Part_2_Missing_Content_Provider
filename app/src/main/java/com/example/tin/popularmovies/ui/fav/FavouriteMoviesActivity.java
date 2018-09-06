@@ -1,4 +1,4 @@
-package com.example.tin.popularmovies.Activities;
+package com.example.tin.popularmovies.ui.fav;
 
 import android.arch.persistence.room.Room;
 import android.content.Intent;
@@ -13,6 +13,7 @@ import com.example.tin.popularmovies.room.FavouriteMovieRoom;
 import com.example.tin.popularmovies.room.FavouriteMovieRoomDAO;
 import com.example.tin.popularmovies.Models.FavouriteMovie;
 import com.example.tin.popularmovies.R;
+import com.example.tin.popularmovies.ui.detail.DetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
