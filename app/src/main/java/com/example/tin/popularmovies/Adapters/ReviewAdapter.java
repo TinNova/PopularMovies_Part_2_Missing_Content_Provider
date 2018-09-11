@@ -7,19 +7,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.tin.popularmovies.Models.Review;
 import com.example.tin.popularmovies.R;
+import com.example.tin.popularmovies.retrofit.review.ReviewResult;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder> {
 
 
-    private final List<Review> reviews;
+    private final ArrayList<ReviewResult> reviews;
     private final Context context;
 
 
-    public ReviewAdapter(List<Review> reviews, Context context) {
+    public ReviewAdapter(ArrayList<ReviewResult> reviews, Context context) {
         this.reviews = reviews;
         this.context = context;
     }
@@ -49,10 +49,10 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
 
-        Review review = reviews.get(position);
+        ReviewResult review = reviews.get(position);
 
-        viewHolder.userNameTV.setText(review.getUserName());
-        viewHolder.userReviewTV.setText(review.getUserComment());
+        viewHolder.userNameTV.setText(review.getAuthor());
+        viewHolder.userReviewTV.setText(review.getContent());
 
     }
 
@@ -61,20 +61,16 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         return reviews.size();
     }
 
-
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         final TextView userNameTV;
         final TextView userReviewTV;
-
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             userNameTV = (TextView) itemView.findViewById(R.id.user_name);
             userReviewTV = (TextView) itemView.findViewById(R.id.user_review);
-
         }
-
     }
 }

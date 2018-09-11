@@ -10,19 +10,24 @@ import android.widget.TextView;
 
 import com.example.tin.popularmovies.Models.CastMember;
 import com.example.tin.popularmovies.R;
+import com.example.tin.popularmovies.retrofit.cast.CastResult;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.tin.popularmovies.Constants.BASE_IMAGE_URL;
+import static com.example.tin.popularmovies.Constants.BASE_URL;
 
 public class CastMemberAdapter extends RecyclerView.Adapter<CastMemberAdapter.ViewHolder> {
 
 
-    private final List<CastMember> castMembers;
+    private final ArrayList<CastResult> castResults;
     private final Context context;
 
 
-    public CastMemberAdapter(List<CastMember> castMembers, Context context) {
-        this.castMembers = castMembers;
+    public CastMemberAdapter(ArrayList<CastResult> castResults, Context context) {
+        this.castResults = castResults;
         this.context = context;
     }
 
@@ -51,19 +56,19 @@ public class CastMemberAdapter extends RecyclerView.Adapter<CastMemberAdapter.Vi
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
 
-        CastMember castMember = castMembers.get(position);
+        CastResult castResult = castResults.get(position);
 
-        Picasso.with(context).load(castMember.getActorImageUrl())
+        Picasso.with(context).load(BASE_IMAGE_URL + castResult.getProfilePath())
                 .into(viewHolder.castMemberThumbnail);
 
-        viewHolder.actorName.setText(castMember.getActorName());
-        viewHolder.characterName.setText(castMember.getCharacterName());
+        viewHolder.actorName.setText(castResult.getName());
+        viewHolder.characterName.setText(castResult.getCharacter());
 
     }
 
     @Override
     public int getItemCount() {
-        return castMembers.size();
+        return castResults.size();
     }
 
 

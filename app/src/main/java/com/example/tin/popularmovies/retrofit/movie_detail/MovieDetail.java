@@ -2,14 +2,15 @@
 package com.example.tin.popularmovies.retrofit.movie_detail;
 
 import java.util.List;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Parcelable.Creator;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class MovieDetail implements Parcelable
-{
+public class MovieDetail implements Parcelable {
 
     @SerializedName("adult")
     @Expose
@@ -90,7 +91,7 @@ public class MovieDetail implements Parcelable
 
 
         @SuppressWarnings({
-            "unchecked"
+                "unchecked"
         })
         public MovieDetail createFromParcel(Parcel in) {
             return new MovieDetail(in);
@@ -100,8 +101,7 @@ public class MovieDetail implements Parcelable
             return (new MovieDetail[size]);
         }
 
-    }
-    ;
+    };
 
     protected MovieDetail(Parcel in) {
         this.adult = ((boolean) in.readValue((boolean.class.getClassLoader())));
@@ -163,7 +163,26 @@ public class MovieDetail implements Parcelable
     }
 
     public int describeContents() {
-        return  0;
+        return 0;
     }
 
+    public String getPosterPath() {
+        return posterPath;
+    }
+
+    public String getOriginalTitle() {
+        return originalTitle;
+    }
+
+    public String getOverview() {
+        return overview;
+    }
+
+    public double getVoteAverage() {
+        return voteAverage;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate;
+    }
 }

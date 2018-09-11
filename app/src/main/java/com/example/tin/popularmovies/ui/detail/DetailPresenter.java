@@ -4,10 +4,12 @@ import android.util.Log;
 
 import com.example.tin.popularmovies.retrofit.RestService;
 import com.example.tin.popularmovies.retrofit.cast.Cast;
+import com.example.tin.popularmovies.retrofit.cast.CastResult;
 import com.example.tin.popularmovies.retrofit.movie.Movie;
 import com.example.tin.popularmovies.retrofit.movie.MovieResult;
 import com.example.tin.popularmovies.retrofit.movie_detail.MovieDetail;
 import com.example.tin.popularmovies.retrofit.review.Review;
+import com.example.tin.popularmovies.retrofit.review.ReviewResult;
 import com.example.tin.popularmovies.retrofit.trailer.Trailer;
 import com.example.tin.popularmovies.retrofit.trailer.TrailerResult;
 
@@ -35,7 +37,7 @@ public class DetailPresenter implements DetailContract.DetailPresenter {
     }
 
     @Override
-    public void getMovieDetails(int movieId) {
+    public void getMovieDetails(String movieId) {
 
         RestService.getInstance()
                 .getFilmDetails(movieId, API_KEY)
@@ -48,12 +50,12 @@ public class DetailPresenter implements DetailContract.DetailPresenter {
                     }
 
                     @Override
-                    public void onNext(MovieDetail movieDetail) {
+                    public void onNext(MovieDetail movieDetails) {
 
-                        if (movieDetail != null) {
+                        if (movieDetails != null) {
 
-//                                detailScreen.populateRecyclerView((ArrayList<MovieResult>) movies.getResults());
-                                Log.d(TAG, "onNext, MovieDetail: " + movieDetail);
+                            detailScreen.populateView(movieDetails);
+                            Log.d(TAG, "onNext, MovieDetail: " + movieDetails);
 
                         } else {
                             Log.e(TAG, "onNext, movies is null.");
@@ -92,8 +94,8 @@ public class DetailPresenter implements DetailContract.DetailPresenter {
 
                         if (trailers != null) {
 
-                                detailScreen.populateTrailerRecyclerView((ArrayList<TrailerResult>) trailers.getResults());
-                                Log.d(TAG, "onNext, Trailer: " + trailers);
+                            detailScreen.populateTrailerRecyclerView((ArrayList<TrailerResult>) trailers.getResults());
+                            Log.d(TAG, "onNext, Trailer: " + trailers);
 
                         } else {
                             Log.e(TAG, "onNext, movies is null.");
@@ -112,7 +114,6 @@ public class DetailPresenter implements DetailContract.DetailPresenter {
 
                     }
                 });
-
     }
 
     @Override
@@ -133,8 +134,8 @@ public class DetailPresenter implements DetailContract.DetailPresenter {
 
                         if (cast != null) {
 
-//                                detailScreen.populateRecyclerView((ArrayList<MovieResult>) movies.getResults());
-                                Log.d(TAG, "onNext, Cast: " + cast);
+                            detailScreen.populateCastRecyclerView((ArrayList<CastResult>) cast.getResults());
+                            Log.d(TAG, "onNext, Cast: " + cast);
 
                         } else {
                             Log.e(TAG, "onNext, movies is null.");
@@ -153,6 +154,45 @@ public class DetailPresenter implements DetailContract.DetailPresenter {
 
                     }
                 });
+    }
 
+    @Override
+    public void getReviews(int movieId) {
+
+        RestService.getInstance()
+                .getReviews(movieId, API_KEY)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Review>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(Review review) {
+
+                        if (review != null) {
+
+                            detailScreen.populateReviewRecyclerView((ArrayList<ReviewResult>) review.getResults());
+                            Log.d(TAG, "onNext, Cast: " + review);
+
+                        } else {
+                            Log.e(TAG, "onNext, movies is null.");
+                        }
+                    }
+
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                        Log.e(TAG, "onError: error while load listings " + Log.getStackTraceString(e));
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 }

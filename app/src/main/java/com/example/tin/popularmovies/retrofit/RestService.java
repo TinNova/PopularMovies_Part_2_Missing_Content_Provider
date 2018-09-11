@@ -74,7 +74,7 @@ public class RestService {
         return INSTANCE.getReviews(movieId, apiKey);
     }
 
-    public Observable<MovieDetail> getFilmDetails(int movieId, String apiKey) {
+    public Observable<MovieDetail> getFilmDetails(String movieId, String apiKey) {
         return INSTANCE.getFilmDetails(movieId, apiKey);
     }
 }

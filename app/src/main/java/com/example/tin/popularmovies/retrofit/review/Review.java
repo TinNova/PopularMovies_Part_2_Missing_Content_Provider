@@ -2,14 +2,14 @@
 package com.example.tin.popularmovies.retrofit.review;
 
 import java.util.List;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Review implements Parcelable
-{
+public class Review implements Parcelable {
 
     @SerializedName("id")
     @Expose
@@ -30,7 +30,7 @@ public class Review implements Parcelable
 
 
         @SuppressWarnings({
-            "unchecked"
+                "unchecked"
         })
         public Review createFromParcel(Parcel in) {
             return new Review(in);
@@ -40,8 +40,7 @@ public class Review implements Parcelable
             return (new Review[size]);
         }
 
-    }
-    ;
+    };
 
     protected Review(Parcel in) {
         this.id = ((int) in.readValue((int.class.getClassLoader())));
@@ -63,7 +62,10 @@ public class Review implements Parcelable
     }
 
     public int describeContents() {
-        return  0;
+        return 0;
     }
 
+    public List<ReviewResult> getResults() {
+        return results;
+    }
 }

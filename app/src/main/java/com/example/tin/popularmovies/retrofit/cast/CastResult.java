@@ -7,8 +7,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class CastResult implements Parcelable
-{
+public class CastResult implements Parcelable {
 
     @SerializedName("cast_id")
     @Expose
@@ -38,7 +37,7 @@ public class CastResult implements Parcelable
 
 
         @SuppressWarnings({
-            "unchecked"
+                "unchecked"
         })
         public CastResult createFromParcel(Parcel in) {
             return new CastResult(in);
@@ -48,8 +47,7 @@ public class CastResult implements Parcelable
             return (new CastResult[size]);
         }
 
-    }
-    ;
+    };
 
     protected CastResult(Parcel in) {
         this.castId = ((int) in.readValue((int.class.getClassLoader())));
@@ -77,7 +75,18 @@ public class CastResult implements Parcelable
     }
 
     public int describeContents() {
-        return  0;
+        return 0;
     }
 
+    public String getProfilePath() {
+        return profilePath;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCharacter() {
+        return character;
+    }
 }

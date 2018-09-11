@@ -2,14 +2,14 @@
 package com.example.tin.popularmovies.retrofit.cast;
 
 import java.util.List;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Cast implements Parcelable
-{
+public class Cast implements Parcelable {
 
     @SerializedName("id")
     @Expose
@@ -21,7 +21,7 @@ public class Cast implements Parcelable
 
 
         @SuppressWarnings({
-            "unchecked"
+                "unchecked"
         })
         public Cast createFromParcel(Parcel in) {
             return new Cast(in);
@@ -31,8 +31,7 @@ public class Cast implements Parcelable
             return (new Cast[size]);
         }
 
-    }
-    ;
+    };
 
     protected Cast(Parcel in) {
         this.id = ((int) in.readValue((int.class.getClassLoader())));
@@ -48,7 +47,10 @@ public class Cast implements Parcelable
     }
 
     public int describeContents() {
-        return  0;
+        return 0;
     }
 
+    public List<CastResult> getResults() {
+        return cast;
+    }
 }

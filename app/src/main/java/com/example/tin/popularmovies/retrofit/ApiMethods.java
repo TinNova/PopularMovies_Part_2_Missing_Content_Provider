@@ -47,5 +47,5 @@ public interface ApiMethods {
     Observable<Review> getReviews(@Path("MOVIE_ID") int movieId, @Query("api_key") String apiKey);
 
     @GET("3/movie/{MOVIE_ID}?language=en-UK")
-    Observable<MovieDetail> getFilmDetails(@Path("MOVIE_ID") int movieId, @Query("api_key") String apiKey);
+    Observable<MovieDetail> getFilmDetails(@Path("MOVIE_ID") String movieId, @Query("api_key") String apiKey);
 }
