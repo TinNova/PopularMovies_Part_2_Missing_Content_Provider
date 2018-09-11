@@ -38,14 +38,14 @@ public interface ApiMethods {
     Observable<Movie> getPopularFilms(@Query("api_key") String apiKey);
 
     @GET("3/movie/{MOVIE_ID}/videos?language=en-UK")
-    Observable<ArrayList<Trailer>> getTrailers(@Query("api_key") String apiKey, @Path("MOVIE_ID") String movieId);
+    Observable<Trailer> getTrailers(@Path("MOVIE_ID") int movieId, @Query("api_key") String apiKey);
 
     @GET("3/movie/{MOVIE_ID}/credits?language=en-UK")
-    Observable<ArrayList<Cast>> getCast(@Query("api_key") String apiKey, @Path("MOVIE_ID") String movieId);
+    Observable<Cast> getCast(@Path("MOVIE_ID") int movieId, @Query("api_key") String apiKey);
 
     @GET("3/movie/{MOVIE_ID}/reviews?language=en-US")
-    Observable<ArrayList<Review>> getReviews(@Query("api_key") String apiKey, @Path("MOVIE_ID") String movieId);
+    Observable<Review> getReviews(@Path("MOVIE_ID") int movieId, @Query("api_key") String apiKey);
 
     @GET("3/movie/{MOVIE_ID}?language=en-UK")
-    Observable<ArrayList<MovieDetail>> getFilmDetails(@Query("api_key") String apiKey, @Path("MOVIE_ID") String movieId);
+    Observable<MovieDetail> getFilmDetails(@Path("MOVIE_ID") int movieId, @Query("api_key") String apiKey);
 }

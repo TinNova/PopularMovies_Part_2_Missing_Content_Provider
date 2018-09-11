@@ -1,6 +1,5 @@
 package com.example.tin.popularmovies.ui.main;
 
-import android.app.Application;
 import android.util.Log;
 
 import com.example.tin.popularmovies.retrofit.RestService;

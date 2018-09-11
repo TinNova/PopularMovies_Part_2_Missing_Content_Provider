@@ -9,10 +9,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.tin.popularmovies.Models.Trailer;
+import com.example.tin.popularmovies.MoviePositionListener;
 import com.example.tin.popularmovies.R;
+import com.example.tin.popularmovies.TrailerPositionListenter;
+import com.example.tin.popularmovies.retrofit.trailer.TrailerResult;
 import com.squareup.picasso.Picasso;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHolder>{
 
@@ -22,21 +25,17 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
      */
     private final String YOUTUBETHUMBNAILSTART = "https://img.youtube.com/vi/";
     private final String YOUTUBETHUMBNAILEND = "/0.jpg";
+    private final String YOUTUBE_TRAILER_BASE_URL = "https://www.youtube.com/watch?v=";
 
-    private final List<Trailer> trailers;
+
+    private final ArrayList<TrailerResult> trailers;
     private final Context context;
+    private final TrailerPositionListenter trailerPositionListenter;
 
-    private final TrailerListItemClickListener mOnClickListener;
-
-    public interface TrailerListItemClickListener {
-        void onListItemClick (int clickedItemIndex);
-    }
-
-
-    public TrailerAdapter(List<Trailer> trailers, Context context, TrailerListItemClickListener listener) {
+    public TrailerAdapter(ArrayList<TrailerResult> trailers, Context context, TrailerPositionListenter trailerPositionListenter) {
         this.trailers = trailers;
         this.context = context;
-        this.mOnClickListener = listener;
+        this.trailerPositionListenter = trailerPositionListenter;
     }
 
     /**
@@ -64,12 +63,12 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
 
-        Trailer trailer = trailers.get(position);
+        TrailerResult trailer = trailers.get(position);
 
-        Picasso.with(context).load(YOUTUBETHUMBNAILSTART + trailer.getTrailerKey() + YOUTUBETHUMBNAILEND)
+        Picasso.with(context).load(YOUTUBETHUMBNAILSTART + trailer.getKey() + YOUTUBETHUMBNAILEND)
                 .into(viewHolder.trailerThumbNail);
 
-        viewHolder.trailerTitle.setText(trailer.getTrailerName());
+        viewHolder.trailerTitle.setText(trailer.getName());
 
     }
 
@@ -79,19 +78,10 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         final ImageView trailerThumbNail;
         final TextView trailerTitle;
-
-        @Override
-        public void onClick(View view) {
-
-            int clickedPosition = getAdapterPosition();
-            mOnClickListener.onListItemClick(clickedPosition);
-
-        }
-
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -99,8 +89,13 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
             trailerThumbNail = (ImageView) itemView.findViewById(R.id.trailer_thumbnail);
             trailerTitle = (TextView) itemView.findViewById(R.id.trailer_title);
 
-            itemView.setOnClickListener(this);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
 
+                    trailerPositionListenter.trailerItemClick(YOUTUBE_TRAILER_BASE_URL + trailers.get(getAdapterPosition()).getKey());
+                }
+            });
         }
 
     }

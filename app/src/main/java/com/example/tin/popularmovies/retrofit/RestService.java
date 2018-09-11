@@ -62,19 +62,19 @@ public class RestService {
         return INSTANCE.getPopularFilms(apiKey);
     }
 
-    public Observable<ArrayList<Trailer>> getTrailers(String apiKey, String movieId) {
-        return INSTANCE.getTrailers(apiKey, movieId);
+    public Observable<Trailer> getTrailers(int movieId, String apiKey) {
+        return INSTANCE.getTrailers(movieId, apiKey);
     }
 
-    public Observable<ArrayList<Cast>> getCast(String apiKey, String movieId) {
-        return INSTANCE.getCast(apiKey, movieId);
+    public Observable<Cast> getCast(int movieId, String apiKey) {
+        return INSTANCE.getCast(movieId, apiKey);
     }
 
-    public Observable<ArrayList<Review>> getReviews(String apiKey, String movieId) {
-        return INSTANCE.getReviews(apiKey, movieId);
+    public Observable<Review> getReviews(int movieId, String apiKey) {
+        return INSTANCE.getReviews(movieId, apiKey);
     }
 
-    public Observable<ArrayList<MovieDetail>> getFilmDetails(String apiKey, String movieId) {
-        return INSTANCE.getFilmDetails(apiKey, movieId);
+    public Observable<MovieDetail> getFilmDetails(int movieId, String apiKey) {
+        return INSTANCE.getFilmDetails(movieId, apiKey);
     }
 }

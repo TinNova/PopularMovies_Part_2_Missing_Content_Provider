@@ -7,8 +7,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class TrailerResult implements Parcelable
-{
+public class TrailerResult implements Parcelable {
 
     @SerializedName("id")
     @Expose
@@ -38,7 +37,7 @@ public class TrailerResult implements Parcelable
 
 
         @SuppressWarnings({
-            "unchecked"
+                "unchecked"
         })
         public TrailerResult createFromParcel(Parcel in) {
             return new TrailerResult(in);
@@ -47,9 +46,7 @@ public class TrailerResult implements Parcelable
         public TrailerResult[] newArray(int size) {
             return (new TrailerResult[size]);
         }
-
-    }
-    ;
+    };
 
     protected TrailerResult(Parcel in) {
         this.id = ((String) in.readValue((String.class.getClassLoader())));
@@ -141,7 +138,7 @@ public class TrailerResult implements Parcelable
     }
 
     public int describeContents() {
-        return  0;
+        return 0;
     }
 
 }

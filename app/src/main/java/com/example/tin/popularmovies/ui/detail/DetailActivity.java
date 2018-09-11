@@ -28,6 +28,8 @@ import com.example.tin.popularmovies.Models.Review;
 import com.example.tin.popularmovies.Models.Trailer;
 import com.example.tin.popularmovies.NetworkUtils;
 import com.example.tin.popularmovies.R;
+import com.example.tin.popularmovies.TrailerPositionListenter;
+import com.example.tin.popularmovies.retrofit.trailer.TrailerResult;
 import com.example.tin.popularmovies.room.AppDatabase;
 import com.example.tin.popularmovies.room.FavouriteMovieRoom;
 import com.example.tin.popularmovies.room.FavouriteMovieRoomDAO;
@@ -47,12 +49,11 @@ import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_CREDITS;
 import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_REVIEWS;
 import static com.example.tin.popularmovies.NetworkUtils.MOVIE_ID_TRAILERS;
 
-public class DetailActivity extends AppCompatActivity implements DetailContract.DetailScreen, TrailerAdapter.TrailerListItemClickListener {
+public class DetailActivity extends AppCompatActivity implements DetailContract.DetailScreen, TrailerPositionListenter {
 
     // TAG to help catch errors in Log
     private static final String TAG = DetailActivity.class.getSimpleName();
 
-    private static final String LIST_STATE_KEY = "list_state_key";
     ScrollView mScrollView;
 
     private static final String GET_DETAIL_SEARCH_URL = "get_detail_search_url";
@@ -61,17 +62,14 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
     private static final String GET_REVIEW_SEARCH_URL = "get_review_search_url";
 
     private static final int GET_DETAIL_LOADER = 1;
-    private static final int GET_TRAILER_LOADER = 2;
     private static final int GET_CAST_LOADER = 3;
     private static final int GET_REVIEW_LOADER = 4;
 
     // RecyclerView For Trailer
-    private final String YOUTUBETRAILERSTART = "https://www.youtube.com/watch?v=";
     private RecyclerView trailerRecyclerView;
     private RecyclerView castMemberRecyclerView;
     private RecyclerView reviewRecyclerView;
     private RecyclerView.Adapter trailerAdapter;
-    private List<Trailer> trailers;
     private List<CastMember> castMembers;
     private List<Review> reviews;
 
@@ -133,7 +131,10 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
             String movieSynopsis = intentThatStartedThisActivity.getStringExtra("MovieSynopsis");
             String movieUserRating = intentThatStartedThisActivity.getStringExtra("MovieUserRating");
             String movieReleaseDate = intentThatStartedThisActivity.getStringExtra("MovieReleaseDate");
-            movieId = intentThatStartedThisActivity.getStringExtra("MovieId");
+//            movieId = intentThatStartedThisActivity.getStringExtra("MovieId");
+            int movieId2 = intentThatStartedThisActivity.getIntExtra("MovieId", 0);
+
+            Log.d(TAG, "MovieId: " + movieId2);
 
             Picasso.with(this).load(moviePoster).into(mMoviePosterIV);
             mMovieTitleTV.setText(movieTitle);
@@ -141,7 +142,10 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
             mMovieUserRatingTV.setText(movieUserRating);
             mMovieReleaseDateTV.setText(movieReleaseDate);
 
-            MakeDetailUrlSearchQuery();
+            detailPresenter.getTrailer(movieId2);
+            detailPresenter.getCast(movieId2);
+//            detailPresenter.getReviews(movieId2);
+//            MakeDetailUrlSearchQuery();
             Organise_RecyclerView_And_LayoutManagers();
 
             //Else if DetailActivity was triggered by the FavouriteMoviesActivity
@@ -259,13 +263,6 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         }
     }
 
-    @Override
-    public void onListItemClick(int clickedItemIndex) {
-
-        playTrailer(YOUTUBETRAILERSTART + trailers.get(clickedItemIndex).getTrailerKey());
-
-    }
-
     private LoaderManager.LoaderCallbacks<String> getDetailLoader = new LoaderManager.LoaderCallbacks<String>() {
 
         @Override
@@ -347,107 +344,6 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
             }
         }
 
-
-        @Override
-        public void onLoaderReset(Loader<String> loader) {
-
-        }
-    };
-
-    private LoaderManager.LoaderCallbacks<String> getTrailerLoader = new LoaderManager.LoaderCallbacks<String>() {
-
-        @Override
-        public Loader<String> onCreateLoader(int id, final Bundle args) {
-            return new AsyncTaskLoader<String>(getApplicationContext()) {
-
-                // This String will contain the raw JSON from the getDetails search
-                String mGetTrailerJson;
-
-                @Override
-                protected void onStartLoading() {
-                    super.onStartLoading();
-                    if (args == null) {
-                        return;
-                    }
-
-                    // When we begin loading in the background, display the loading indicator to
-                    // the user
-                    //mLoadingIndicator.setVisibility(View.VISIBLE);
-
-                    // If the raw Json is cached within the String mGetDetailJson, simply deliver that
-                    // json, avoid reloading the data. Else if it is not cached then reload the data
-                    if (mGetTrailerJson != null) {
-                        deliverResult(mGetTrailerJson);
-                    } else {
-                        forceLoad();
-                    }
-                }
-
-                @Override
-                public String loadInBackground() {
-
-                    // Extract the search query from the args using the constant
-                    String searchQueryUrlString = args.getString(GET_TRAILER_SEARCH_URL);
-
-                    try {
-
-                        URL getTrailerUrl = new URL(searchQueryUrlString);
-                        String movieTrailerResults = NetworkUtils.getResponseFromHttpUrl(getTrailerUrl);
-
-                        return movieTrailerResults;
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                }
-
-                // Store the raw Json in the String mGetDetailJson
-                @Override
-                public void deliverResult(String getJson) {
-                    mGetTrailerJson = getJson;
-                    super.deliverResult(getJson);
-
-                }
-            };
-        }
-
-        @Override
-        public void onLoadFinished(Loader<String> loader, String data) {
-            if (data != null && !data.equals("")) {
-
-                /** PARSING JSON */
-                try {
-                    // Define the entire feed as a JSONObject
-                    JSONObject theMovieDatabaseJsonObject = new JSONObject(data);
-                    // Define the "results" JsonArray as a JSONArray
-                    JSONArray resultsArray = theMovieDatabaseJsonObject.getJSONArray("results");
-                    // Now we need to get the individual Movie JsonObjects from the resultArray
-                    // using a for loop
-                    for (int i = 0; i < resultsArray.length(); i++) {
-
-                        JSONObject movieJsonObject = resultsArray.getJSONObject(i);
-
-                        Trailer trailer = new Trailer(
-                                movieJsonObject.getString("name"),
-                                movieJsonObject.getString("key")
-                        );
-
-                        trailers.add(trailer);
-
-                        Log.v(TAG, "Trailers List: " + trailers);
-                    }
-
-                    trailerAdapter = new TrailerAdapter(trailers, getApplicationContext(), DetailActivity.this);
-                    trailerRecyclerView.setAdapter(trailerAdapter);
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
 
         @Override
         public void onLoaderReset(Loader<String> loader) {
@@ -725,37 +621,25 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
     private void MakeDetailUrlSearchQuery() {
 
         // Tells NetworkUtils to "buildDetailUrl" then saves it as a URL variable
-        URL trailerSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_TRAILERS);
         URL castMembersSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_CREDITS);
         URL reviewsSearchUrl = NetworkUtils.buildDetailUrl(movieId, MOVIE_ID_REVIEWS);
 
         // Loaders Take A Bundle So Insert The URL build above Into A Bundle
-        Bundle getTrailerBundle = new Bundle();
         Bundle getCastBundle = new Bundle();
         Bundle getReviewBundle = new Bundle();
-        getTrailerBundle.putString(GET_TRAILER_SEARCH_URL, trailerSearchUrl.toString());
         getCastBundle.putString(GET_CAST_SEARCH_URL, castMembersSearchUrl.toString());
         getReviewBundle.putString(GET_REVIEW_SEARCH_URL, reviewsSearchUrl.toString());
 
         // Call getSupportLoaderManager and store it in a LoaderManger variable
-        LoaderManager loaderManagerTrailer = getSupportLoaderManager();
         LoaderManager loaderManagerCast = getSupportLoaderManager();
         LoaderManager loaderManagerReview = getSupportLoaderManager();
 
         // Get our Loader by calling getLoader and passing the ID we specified for this loader
-        Loader<String> getTrailerSearchLoader = loaderManagerTrailer.getLoader(GET_TRAILER_LOADER);
         Loader<String> getCastSearchLoader = loaderManagerCast.getLoader(GET_CAST_LOADER);
         Loader<String> getReviewSearchLoader = loaderManagerReview.getLoader(GET_REVIEW_LOADER);
 
         // We now pass the Bundle to the Loader to create a connection and give us the feed
         // If the Loader was null, initialize it. Else restart it.
-        if (getTrailerSearchLoader == null) {
-
-            loaderManagerTrailer.initLoader(GET_TRAILER_LOADER, getTrailerBundle, getTrailerLoader);
-        } else {
-            loaderManagerTrailer.restartLoader(GET_TRAILER_LOADER, getTrailerBundle, getTrailerLoader);
-        }
-
         if (getCastSearchLoader == null) {
 
             loaderManagerCast.initLoader(GET_CAST_LOADER, getCastBundle, getCastLoader);
@@ -802,8 +686,6 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         castMemberRecyclerView.setLayoutManager(castMemberLinearLayoutManager);
         reviewRecyclerView.setLayoutManager(reviewLinearLayoutManager);
 
-
-        trailers = new ArrayList<>();
         castMembers = new ArrayList<>();
         reviews = new ArrayList<>();
 
@@ -820,5 +702,29 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         FavouriteMovieRoom favRoom = mFavouriteMovieRoomDAO.getMovieWithId(movieId);
         mFavouriteMovieRoomDAO.delete(favRoom);
 
+    }
+
+    @Override
+    public void populateTrailerRecyclerView(ArrayList<TrailerResult> trailers) {
+
+        trailerAdapter = new TrailerAdapter(trailers, getApplicationContext(), this);
+        trailerRecyclerView.setAdapter(trailerAdapter);
+    }
+
+    @Override
+    public void trailerItemClick(String trailerUrl) {
+
+        Uri videoURL = Uri.parse(trailerUrl);
+
+        Intent playTrailerIntent = new Intent(Intent.ACTION_VIEW);
+        playTrailerIntent.setData(videoURL);
+
+        // Checks if there is an App that can handle this intent, if there isn't display a toast
+        // Without this if statement the app would crash if it couldn't find an app to open the intent
+        if (playTrailerIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(playTrailerIntent);
+        } else {
+            Toast.makeText(this, "Can't Play Video", Toast.LENGTH_LONG).show();
+        }
     }
 }

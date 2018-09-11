@@ -2,14 +2,14 @@
 package com.example.tin.popularmovies.retrofit.trailer;
 
 import java.util.List;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Trailer implements Parcelable
-{
+public class Trailer implements Parcelable {
 
     @SerializedName("id")
     @Expose
@@ -21,7 +21,7 @@ public class Trailer implements Parcelable
 
 
         @SuppressWarnings({
-            "unchecked"
+                "unchecked"
         })
         public Trailer createFromParcel(Parcel in) {
             return new Trailer(in);
@@ -31,8 +31,7 @@ public class Trailer implements Parcelable
             return (new Trailer[size]);
         }
 
-    }
-    ;
+    };
 
     protected Trailer(Parcel in) {
         this.id = ((int) in.readValue((int.class.getClassLoader())));
@@ -64,7 +63,7 @@ public class Trailer implements Parcelable
     }
 
     public int describeContents() {
-        return  0;
+        return 0;
     }
 
 }

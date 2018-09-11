@@ -6,6 +6,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
     private MainPresenter mainPresenter;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
         setupViews(savedInstanceState);
 
     }
-
 
     private void setupViews(Bundle savedInstanceState) {
 
@@ -139,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
     }
 
     @Override
-    public void MovieItemClick(MovieResult movie) {
+    public void movieItemClick(MovieResult movie) {
         Intent intent = new Intent(this, DetailActivity.class);
 
         intent.putExtra("MoviePoster", movie.getPosterPath());
@@ -149,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
         intent.putExtra("MovieReleaseDate", movie.getReleaseDate());
         intent.putExtra("MovieId", movie.getId());
 
+        Log.d(TAG, "MovieId = " + movie.getId());
         startActivity(intent);
     }
 
@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
         outState.putInt(MENU_ITEM_SELECTED, menuId);
         outState.putInt(FILTER_TYPE, filterType);
     }
+
 }
 
 /**
