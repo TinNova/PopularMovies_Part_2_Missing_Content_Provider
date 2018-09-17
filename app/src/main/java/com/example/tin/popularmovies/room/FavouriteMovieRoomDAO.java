@@ -25,5 +25,5 @@ public interface FavouriteMovieRoomDAO {
     public List<FavouriteMovieRoom> getFavouriteMovieRooms();
 
     @Query("SELECT * FROM favouriteMovieRoom WHERE movieId = :id")
-    public FavouriteMovieRoom getMovieWithId(String id);
+    public FavouriteMovieRoom getMovieWithId(int id);
 }

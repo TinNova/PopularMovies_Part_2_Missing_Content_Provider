@@ -58,6 +58,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
     private TextView mMovieReleaseDateTV;
 
     private String movieId;
+    private int movieIdTEST;
     private String movieTitle;
     private long row_id;
 
@@ -101,6 +102,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
             String movieUserRating = Double.toString(intentThatStartedThisActivity.getDoubleExtra("MovieUserRating", 0));
             String movieReleaseDate = intentThatStartedThisActivity.getStringExtra("MovieReleaseDate");
             int movieId = intentThatStartedThisActivity.getIntExtra("MovieId", 0);
+            movieIdTEST = intentThatStartedThisActivity.getIntExtra("MovieId", 0);
 
             Picasso.with(this).load(moviePoster).into(mMoviePosterIV);
             mMovieTitleTV.setText(movieTitle);
@@ -129,7 +131,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         }
     }
 
-    String isFilmFavourite = null;
+    int isFilmFavourite = -99 ;
 
 
     @Override
@@ -140,7 +142,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         favouriteMenu = menu.findItem(R.id.favourite);
 
         try {
-            isFilmFavourite = mFavouriteMovieRoomDAO.getMovieWithId(movieId).getMovieId();
+            isFilmFavourite = mFavouriteMovieRoomDAO.getMovieWithId(movieIdTEST).getMovieId();
             Log.d(TAG, "onCreateOptionsMenu: " + isFilmFavourite);
 
         } catch (NullPointerException e) {
@@ -151,7 +153,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
 
 //        Log.d(TAG, "onCreateOptionsMenu: " + testMovieId);
         // Assign Correct Heart Icon: If 0 = Not Favourite, so add the white border icon
-        if (isFilmFavourite == null) {
+        if (isFilmFavourite == -99) {
 //        if (favourite_NotFavourite == 0) {
             favouriteMenu.setIcon(R.drawable.ic_favorite_border_white_24dp);
             // else if 1 = Favourite, so add the full white icon
@@ -174,7 +176,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
             case R.id.favourite:
 
                 // If the movie is NOT in the favourite database, add it to favourites
-                if (isFilmFavourite == null) {
+                if (isFilmFavourite == -99) {
 
                     // Change the Heart Icon from white outline to white heart
                     favouriteMenu.setIcon(R.drawable.ic_favorite_white_24dp);
@@ -266,13 +268,13 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         }
     }
 
-    private void addNewMovie(String movieIdSql, String movieTitleSql, byte[] moviePosterByteArraySql) {
+    private void addNewMovie(int movieId, String movieTitle, byte[] moviePosterByteArray) {
 
-        Log.d(TAG, "addNewMovie: " + movieIdSql + " " + movieTitleSql + " " + moviePosterByteArraySql);
+        Log.d(TAG, "addNewMovie: " + movieId + " " + movieTitle + " " + moviePosterByteArray);
         FavouriteMovieRoom favouriteMovieRoom = new FavouriteMovieRoom();
-        favouriteMovieRoom.setMovieId(movieIdSql);
-        favouriteMovieRoom.setMovieName(movieTitleSql);
-        favouriteMovieRoom.setMoviePoster(moviePosterByteArraySql);
+        favouriteMovieRoom.setMovieId(movieId);
+        favouriteMovieRoom.setMovieName(movieTitle);
+        favouriteMovieRoom.setMoviePoster(moviePosterByteArray);
 
         mFavouriteMovieRoomDAO.insert(favouriteMovieRoom);
     }
@@ -287,7 +289,8 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         byte[] data = baos.toByteArray();
 
         String mMovieTitle2 = (String) mMovieTitleTV.getText();
-        addNewMovie(movieId, mMovieTitle2, data);
+        Log.d(TAG, "addNewMovie: " + movieId + " " + mMovieTitle2 + " " + data);
+        addNewMovie(movieIdTEST, mMovieTitle2, data);
 
         Log.v(TAG, "addNewMovie Params: " + movieId + ", " + movieTitle + ", " + data);
 
@@ -295,7 +298,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
 
     private void removeMovie(long id) {
 
-        FavouriteMovieRoom favRoom = mFavouriteMovieRoomDAO.getMovieWithId(movieId);
+        FavouriteMovieRoom favRoom = mFavouriteMovieRoomDAO.getMovieWithId(movieIdTEST);
         mFavouriteMovieRoomDAO.delete(favRoom);
     }
 }

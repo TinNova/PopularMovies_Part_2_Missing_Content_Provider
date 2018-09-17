@@ -7,7 +7,7 @@ import android.arch.persistence.room.RoomDatabase;
  * Created by Tin on 20/08/2018.
  */
 
-@Database(entities = {FavouriteMovieRoom.class}, version = 1)
+@Database(entities = {FavouriteMovieRoom.class}, version = 2)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract FavouriteMovieRoomDAO getFavouriteMovieRoomDAO();

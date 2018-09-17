@@ -13,7 +13,7 @@ public class FavouriteMovieRoom {
 
     @PrimaryKey
     @NonNull
-    private String movieId;
+    private int movieId;
     @NonNull
     private String movieName;
     @NonNull
@@ -21,11 +21,11 @@ public class FavouriteMovieRoom {
 
 
     @NonNull
-    public String getMovieId() {
+    public int getMovieId() {
         return movieId;
     }
 
-    public void setMovieId(@NonNull String movieId) {
+    public void setMovieId(@NonNull int movieId) {
         this.movieId = movieId;
     }
 
